@@ -34,6 +34,13 @@ def main(argv: list[str] | None = None) -> int:
     ingest = commands.add_parser("ingest", help="Explicitly download and archive an official source")
     ingest.add_argument("--source", choices=["kev", "epss"], required=True)
     ingest.add_argument("--data-dir", type=Path, default=Path("data"))
+    warehouse = commands.add_parser("warehouse", help="Build a local DuckDB warehouse")
+    warehouse_commands = warehouse.add_subparsers(dest="warehouse_command", required=True)
+    build = warehouse_commands.add_parser("build", help="Build from validated source archives")
+    build.add_argument("--data-dir", type=Path, default=Path("data"))
+    build.add_argument("--output", type=Path, default=Path("data/warehouse/patchline.duckdb"))
+    build.add_argument("--kev-snapshot", type=str)
+    build.add_argument("--epss-snapshot", type=str)
     args = parser.parse_args(argv)
     if args.command == "doctor":
         if not args.fixture:
@@ -48,6 +55,21 @@ def main(argv: list[str] | None = None) -> int:
             result = ingest_kev(args.data_dir) if args.source == "kev" else ingest_epss(args.data_dir)
         except (KEVIngestionError, EPSSIngestionError, OSError, ValueError, RuntimeError) as exc:
             print(f"{args.source.upper()} ingestion failed: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.command == "warehouse":
+        from patchline.warehouse.build import WarehouseError, build_warehouse
+
+        try:
+            result = build_warehouse(
+                args.data_dir,
+                args.output,
+                kev_snapshot_id=args.kev_snapshot,
+                epss_snapshot_id=args.epss_snapshot,
+            )
+        except (WarehouseError, OSError, ValueError, RuntimeError) as exc:
+            print(f"Warehouse build failed: {exc}", file=sys.stderr)
             return 1
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

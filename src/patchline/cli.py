@@ -1,4 +1,4 @@
-"""Patchline CLI: reproducible offline checks and explicit KEV ingestion."""
+"""Patchline CLI: reproducible offline checks and explicit source ingestion."""
 
 import argparse
 import json
@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     doctor = commands.add_parser("doctor", help="Check offline foundation fixtures")
     doctor.add_argument("--fixture", action="store_true", help="Use only bundled test data")
     ingest = commands.add_parser("ingest", help="Explicitly download and archive an official source")
-    ingest.add_argument("--source", choices=["kev"], required=True)
+    ingest.add_argument("--source", choices=["kev", "epss"], required=True)
     ingest.add_argument("--data-dir", type=Path, default=Path("data"))
     args = parser.parse_args(argv)
     if args.command == "doctor":
@@ -41,16 +41,13 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(fixture_doctor(), sort_keys=True))
         return 0
     if args.command == "ingest":
+        from patchline.ingest.epss import EPSSIngestionError, ingest_epss
         from patchline.ingest.kev import KEVIngestionError, ingest_kev
 
         try:
-            result = ingest_kev(args.data_dir)
-        except (KEVIngestionError, OSError, ValueError, RuntimeError) as exc:
-            print(f"KEV ingestion failed: {exc}", file=sys.stderr)
-            return 1
-        except Exception as exc:
-            # httpx failures are intentionally not swallowed as successful runs.
-            print(f"KEV download failed ({type(exc).__name__}): {exc}", file=sys.stderr)
+            result = ingest_kev(args.data_dir) if args.source == "kev" else ingest_epss(args.data_dir)
+        except (KEVIngestionError, EPSSIngestionError, OSError, ValueError, RuntimeError) as exc:
+            print(f"{args.source.upper()} ingestion failed: {exc}", file=sys.stderr)
             return 1
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

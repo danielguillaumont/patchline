@@ -24,3 +24,34 @@ jobs:
         run: uv run --locked pytest
       - name: Lint
         run: uv run --locked ruff check .
+
+  dbt:
+    name: dbt offline fixture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install locked dependencies
+        run: uv sync --locked --python 3.12
+      - name: Create isolated synthetic warehouse
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: uv run --locked python -m patchline.fixtures.ci_warehouse create --output "$PATCHLINE_DUCKDB_PATH"
+      - name: Verify dbt adapter and parse
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: |
+          uv run --locked dbt debug --project-dir dbt --profiles-dir dbt
+          uv run --locked dbt parse --project-dir dbt --profiles-dir dbt
+      - name: Build and test dbt staging
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: |
+          uv run --locked dbt run --project-dir dbt --profiles-dir dbt
+          uv run --locked dbt test --project-dir dbt --profiles-dir dbt
+      - name: Check staging counts and fixture lineage
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: uv run --locked python -m patchline.fixtures.ci_warehouse verify --output "$PATCHLINE_DUCKDB_PATH"

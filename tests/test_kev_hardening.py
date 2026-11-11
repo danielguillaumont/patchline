@@ -1,13 +1,11 @@
 """Offline fault-injection regression tests for KEV snapshot recovery."""
 
-# ruff: noqa: F811
-
 import json
 from pathlib import Path
 
 import httpx
 import pytest
-from test_kev_ingest import catalog, encoded, schema  # noqa: F401, F811
+from test_kev_ingest import encoded
 
 from patchline.ingest import kev
 from patchline.ingest.kev import KEVIngestionError, ingest_kev

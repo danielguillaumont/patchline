@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_kev
+    description: Clean KEV records with manifest lineage; one row per CVE for the selected snapshot.
+    columns:
+      - name: snapshot_id
+        data_tests: [not_null]
+      - name: cve_id
+        data_tests: [not_null, unique]
+      - name: date_added
+        data_tests: [not_null]
+      - name: catalog_date_released
+        data_tests: [not_null]
+  - name: stg_epss
+    description: Full EPSS scored population retaining date, model, score, and source lineage.
+    columns:
+      - name: snapshot_id
+        data_tests: [not_null]
+      - name: cve_id
+        data_tests: [not_null, unique]
+      - name: score_date
+        data_tests: [not_null]
+      - name: epss
+        data_tests: [not_null]
+      - name: percentile
+        data_tests: [not_null]

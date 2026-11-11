@@ -1,0 +1,12 @@
+name: patchline_analytics
+version: '0.1.0'
+config-version: 2
+profile: patchline_analytics
+model-paths: ["models"]
+test-paths: ["tests"]
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  patchline_analytics:
+    +materialized: view
+    +schema: staging

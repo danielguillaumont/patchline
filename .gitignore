@@ -22,7 +22,13 @@ apps/web/dist/
 .vscode/
 .idea/
 
+# dbt local build output
+/dbt/target/
+/dbt/logs/
+/dbt/dbt_packages/
+
 # Secrets
 .env
 .env.*
 !.env.example
+/dbt/.user.yml

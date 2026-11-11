@@ -1,0 +1,38 @@
+version: 2
+
+sources:
+  - name: warehouse
+    description: Validated P3.1 DuckDB tables from one pinned KEV and EPSS snapshot pair.
+    schema: main
+    tables:
+      - name: source_snapshots
+        description: One selected archived manifest per source, with retrieval and source dates.
+        columns:
+          - name: source
+            data_tests: [not_null, unique]
+          - name: snapshot_id
+            data_tests: [not_null, unique]
+          - name: row_count
+            data_tests: [not_null]
+      - name: raw_kev_snapshot
+        description: CISA KEV catalog with one CVE per selected snapshot.
+        columns:
+          - name: snapshot_id
+            data_tests: [not_null]
+          - name: cve_id
+            data_tests: [not_null, unique]
+          - name: date_added
+            data_tests: [not_null]
+      - name: raw_epss_daily
+        description: Complete scored EPSS population for one selected score date and model.
+        columns:
+          - name: snapshot_id
+            data_tests: [not_null]
+          - name: cve_id
+            data_tests: [not_null, unique]
+          - name: score_date
+            data_tests: [not_null]
+          - name: epss
+            data_tests: [not_null]
+          - name: percentile
+            data_tests: [not_null]

@@ -1,0 +1,26 @@
+name: Offline Foundation CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked --python 3.12
+      - name: Run fixture doctor
+        run: uv run --locked python -m patchline doctor --fixture
+      - name: Test
+        run: uv run --locked pytest
+      - name: Lint
+        run: uv run --locked ruff check .

@@ -1,0 +1,28 @@
+# Local Python files
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Local data only; do not commit raw feeds or warehouse state
+/data/*
+!/data/.gitkeep
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.csv.gz
+
+# JS output / IDE
+node_modules/
+apps/web/dist/
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+!.env.example

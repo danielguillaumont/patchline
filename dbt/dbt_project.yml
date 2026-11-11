@@ -10,3 +10,5 @@ models:
   patchline_analytics:
     +materialized: view
     +schema: staging
+    intermediate:
+      +schema: intermediate

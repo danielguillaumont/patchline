@@ -8,7 +8,12 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from patchline.exports.analytics import ExportError, export_bundle, verify_bundle
+from patchline.exports.analytics import (
+    ExportError,
+    _enforce_consumer_contract,
+    export_bundle,
+    verify_bundle,
+)
 from patchline.fixtures.ci_warehouse import EPSS_ID, KEV_ID, create_fixture
 
 
@@ -80,3 +85,23 @@ def test_export_rejects_unreconciled_population(tmp_path: Path) -> None:
     with pytest.raises(ExportError, match="EPSS score bands do not reconcile"):
         export_bundle(database, tmp_path / "invalid")
     assert not (tmp_path / "invalid").exists()
+
+
+def test_consumer_manifest_rejects_unknown_kind() -> None:
+    with pytest.raises(ExportError, match="Consumer contract manifest"):
+        _enforce_consumer_contract("manifest", {"schema_id": "patchline.analytics-export.v1",
+                                                 "data_kind": "live_now"})
+
+def test_consumer_m03_rejects_percentage_out_of_range() -> None:
+    row = {"metric_id": "M03", "kev_snapshot_id": "kev", "epss_snapshot_id": "epss",
+           "kev_catalog_date_released": "2026-01-15", "epss_source_date": "2026-01-15",
+           "numerator_matched_kev": 2, "denominator_total_kev": 3,
+           "unmatched_kev": 1, "coverage_percent": 101.0}
+    with pytest.raises(ExportError, match="Consumer contract m03"):
+        _enforce_consumer_contract("m03_epss_coverage_of_kev", [row])
+
+def test_consumer_m04_rejects_negative_population() -> None:
+    row = {"metric_id": "M04", "epss_snapshot_id": "epss",
+           "epss_source_date": "2026-01-15", "scored_cve_count": -1}
+    with pytest.raises(ExportError, match="Consumer contract m04"):
+        _enforce_consumer_contract("m04_epss_population_summary", [row])

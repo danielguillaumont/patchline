@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchline.local/contracts/m04_epss_score_bands.v1.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "metric_id",
+      "epss_snapshot_id",
+      "epss_source_date",
+      "band_order",
+      "cve_count",
+      "denominator_scored_cves",
+      "population_percent"
+    ],
+    "properties": {
+      "metric_id": {
+        "type": "string"
+      },
+      "epss_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_source_date": {
+        "type": "string",
+        "minLength": 1
+      },
+      "band_order": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5
+      },
+      "cve_count": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "denominator_scored_cves": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "population_percent": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "lower_bound": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "upper_bound": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "upper_inclusive": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": true
+  },
+  "minItems": 5,
+  "maxItems": 5
+}

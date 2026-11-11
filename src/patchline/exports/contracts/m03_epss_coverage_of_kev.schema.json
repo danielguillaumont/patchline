@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchline.local/contracts/m03_epss_coverage_of_kev.v1.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "metric_id",
+      "kev_snapshot_id",
+      "epss_snapshot_id",
+      "kev_catalog_date_released",
+      "epss_source_date",
+      "numerator_matched_kev",
+      "denominator_total_kev",
+      "unmatched_kev",
+      "coverage_percent"
+    ],
+    "properties": {
+      "metric_id": {
+        "type": "string"
+      },
+      "epss_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_source_date": {
+        "type": "string",
+        "minLength": 1
+      },
+      "kev_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "kev_catalog_date_released": {
+        "type": "string",
+        "minLength": 1
+      },
+      "numerator_matched_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "denominator_total_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "unmatched_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "coverage_percent": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "additionalProperties": true
+  },
+  "minItems": 1,
+  "maxItems": 1
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchline.local/contracts/m04_epss_population_summary.v1.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "metric_id",
+      "epss_snapshot_id",
+      "epss_source_date",
+      "scored_cve_count"
+    ],
+    "properties": {
+      "metric_id": {
+        "type": "string"
+      },
+      "epss_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_source_date": {
+        "type": "string",
+        "minLength": 1
+      },
+      "scored_cve_count": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "min_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "max_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "mean_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "p25_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "median_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "p75_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "p90_epss": {
+        "anyOf": [
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "additionalProperties": true
+  },
+  "minItems": 1,
+  "maxItems": 1
+}

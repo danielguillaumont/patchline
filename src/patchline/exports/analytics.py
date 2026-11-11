@@ -11,9 +11,11 @@ import shutil
 import sys
 import uuid
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 
 import duckdb
+from jsonschema import Draft202012Validator
 
 
 class ExportError(ValueError):
@@ -26,6 +28,26 @@ MODELS = (
     ("m04_epss_score_bands", "analytics_marts.m04_epss_score_bands", "band_order"),
 )
 SCHEMA_ID = "patchline.analytics-export.v1"
+
+
+@lru_cache(maxsize=4)
+def _consumer_schema(name: str) -> Draft202012Validator:
+    """Load the version-controlled contract; never resolve remote schema references."""
+    allowed = {"manifest", *(model for model, _, _ in MODELS)}
+    if name not in allowed:
+        raise ExportError(f"Unknown consumer contract: {name}")
+    path = Path(__file__).parent / "contracts" / f"{name}.schema.json"
+    schema = json.loads(path.read_text(encoding="utf-8"))
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def _enforce_consumer_contract(name: str, payload: object) -> None:
+    errors = _consumer_schema(name).iter_errors(payload)
+    first = next(errors, None)
+    if first is not None:
+        at = ".".join(str(segment) for segment in first.absolute_path) or "root"
+        raise ExportError(f"Consumer contract {name} failed at {at}: {first.message}")
 
 
 def _sha256(path: Path) -> str:
@@ -156,6 +178,7 @@ def export_bundle(database: Path, output: Path) -> dict[str, object]:
                     writer = csv.DictWriter(handle, fieldnames=columns, lineterminator="\n")
                     writer.writeheader()
                     writer.writerows(rows)
+                _enforce_consumer_contract(name, rows)
                 json_path = stage / f"{name}.json"
                 json_path.write_text(json.dumps(rows, sort_keys=True, ensure_ascii=False,
                                                 indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -174,6 +197,7 @@ def export_bundle(database: Path, output: Path) -> dict[str, object]:
                         "notes": ["Local archived-source snapshot pair; not necessarily current.",
                                   "EPSS is a probability estimate, not observed exploitation.",
                                   "Fixture results are synthetic and not empirical findings."]}
+            _enforce_consumer_contract("manifest", manifest)
             (stage / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True,
                                 ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8")
         if output.exists() or output.is_symlink():
@@ -197,6 +221,7 @@ def verify_bundle(output: Path) -> dict[str, object]:
         if manifest["schema_id"] != SCHEMA_ID:
             raise ExportError("Unexpected export manifest schema")
         artifacts = manifest["artifacts"]
+        _enforce_consumer_contract("manifest", manifest)
         expected = {"manifest.json"} | {f"{name}.{ext}" for name, _, _ in MODELS
                                           for ext in ("csv", "json", "parquet")}
         if {a["path"] for a in artifacts} | {"manifest.json"} != expected:
@@ -213,6 +238,7 @@ def verify_bundle(output: Path) -> dict[str, object]:
                 rows = json.loads(file.read_text(encoding="utf-8"))
                 if len(rows) != item["rows"] or any(set(r) != set(item["columns"]) for r in rows):
                     raise ExportError(f"JSON record contract mismatch: {item['path']}")
+                _enforce_consumer_contract(item["model"], rows)
         return manifest
     except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
         if isinstance(exc, ExportError):

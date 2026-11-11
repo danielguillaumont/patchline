@@ -7,7 +7,13 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from patchline.fixtures.ci_warehouse import create_fixture, verify_joins, verify_m03, verify_staging
+from patchline.fixtures.ci_warehouse import (
+    create_fixture,
+    verify_joins,
+    verify_m03,
+    verify_m04,
+    verify_staging,
+)
 
 
 def test_fixture_raw_schema_counts_and_lineage(tmp_path: Path) -> None:
@@ -95,3 +101,24 @@ def test_m03_verifier_rejects_missing_mart(tmp_path: Path) -> None:
             SELECT * FROM main.raw_epss_daily""")
     with pytest.raises(ValueError, match="Unexpected intermediate objects"):
         verify_m03(output)
+
+
+def test_m04_verifier_requires_computed_views(tmp_path: Path) -> None:
+    """An untransformed fixture cannot masquerade as published M04 evidence."""
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with pytest.raises(ValueError, match="Unexpected staging objects"):
+        verify_m04(output)
+
+
+def test_m04_fixture_is_full_epss_population(tmp_path: Path) -> None:
+    """Full score population includes two CVEs absent from KEV and score 0.0."""
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with duckdb.connect(str(output), read_only=True) as con:
+        counts = con.execute("""SELECT COUNT(*),
+            COUNT(*) FILTER (WHERE e.epss = 0.0),
+            COUNT(*) FILTER (WHERE k.cve_id IS NULL)
+            FROM main.raw_epss_daily e
+            LEFT JOIN main.raw_kev_snapshot k ON e.cve_id = k.cve_id""").fetchone()
+        assert counts == (4, 1, 2)

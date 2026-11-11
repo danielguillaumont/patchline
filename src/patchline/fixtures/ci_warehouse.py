@@ -164,7 +164,7 @@ def verify_m03(database: Path) -> None:
         objects = connection.execute("""SELECT table_name, table_type
             FROM information_schema.tables
             WHERE table_schema = 'analytics_marts'""").fetchall()
-        if objects != [("m03_epss_coverage_of_kev", "VIEW")]:
+        if ("m03_epss_coverage_of_kev", "VIEW") not in objects:
             raise ValueError(f"Unexpected M03 objects: {objects}")
         rows = connection.execute("""SELECT metric_id, metric_label, metric_unit,
                 kev_snapshot_id, epss_snapshot_id, kev_catalog_date_released,
@@ -188,9 +188,59 @@ def verify_m03(database: Path) -> None:
         if any(not isinstance(value, str) or not value.strip() for value in row[12:]):
             raise ValueError("M03 population, caveats or retrieval metadata missing")
 
+
+def verify_m04(database: Path) -> None:
+    """Verify complete EPSS score-band and interpolated-quantile metrics."""
+    verify_m03(database)
+    with duckdb.connect(str(database), read_only=True) as connection:
+        names = {r[0] for r in connection.execute("""SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'analytics_marts'""").fetchall()}
+        required = {
+            "m03_epss_coverage_of_kev",
+            "m04_epss_population_summary",
+            "m04_epss_score_bands",
+        }
+        if names != required:
+            raise ValueError(f"Unexpected M04 mart objects: {names}")
+
+        summary = connection.execute("""SELECT metric_id, epss_snapshot_id,
+            epss_source_date, epss_model_version, scored_cve_count, null_score_count,
+            min_epss, max_epss, mean_epss, p25_epss, median_epss, p75_epss, p90_epss,
+            population, caveat, epss_retrieved_at_utc
+            FROM analytics_marts.m04_epss_population_summary""").fetchall()
+        if len(summary) != 1:
+            raise ValueError(f"Expected one M04 summary row, got {len(summary)}")
+        row = summary[0]
+        if row[:6] != ("M04", EPSS_ID, "2026-01-15", "v-ci-synthetic", 4, 0):
+            raise ValueError(f"Unexpected M04 lineage or population: {row[:6]}")
+        expected_scores = (0.0, 1.0, 0.4525, 0.0075, 0.405, 0.85, 0.94)
+        if any(
+            abs(actual - expected) > 1e-10
+            for actual, expected in zip(row[6:13], expected_scores, strict=True)
+        ):
+            raise ValueError(f"Unexpected M04 score statistics: {row[6:13]}")
+        if not all(isinstance(v, str) and v.strip() for v in row[13:]):
+            raise ValueError("M04 population, caveat or retrieval metadata missing")
+
+        bands = connection.execute("""SELECT band_order, cve_count,
+            denominator_scored_cves, population_percent, epss_snapshot_id,
+            epss_source_date, upper_inclusive
+            FROM analytics_marts.m04_epss_score_bands ORDER BY band_order""").fetchall()
+        if len(bands) != 5:
+            raise ValueError(f"Expected exactly five M04 bands, got {len(bands)}")
+        for band, expected_count in zip(bands, (1, 0, 1, 0, 2), strict=True):
+            order, count, denominator, percent, snap, source_date, inclusive = band
+            if count != expected_count or denominator != 4 or order not in range(1, 6):
+                raise ValueError(f"Unexpected M04 score band: {band}")
+            if abs(percent - 25.0 * expected_count) > 1e-10:
+                raise ValueError(f"Unexpected M04 band share: {band}")
+            if snap != EPSS_ID or source_date != "2026-01-15" or inclusive != (order == 5):
+                raise ValueError(f"Unexpected M04 band lineage or boundary: {band}")
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("create", "verify", "verify-joins", "verify-m03"))
+    parser.add_argument("action", choices=("create", "verify", "verify-joins", "verify-m03", "verify-m04"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "create":
@@ -202,10 +252,14 @@ def main() -> None:
     elif args.action == "verify-joins":
         verify_joins(args.output)
         print("Synthetic CI join verification passed (2 both, 1 KEV-only, 2 EPSS-only)")
-    else:
+    elif args.action == "verify-m03":
         verify_m03(args.output)
         print("Synthetic CI M03 verification passed "
               "(2 matched / 3 KEV, 1 unmatched, 66.666... percent)")
+    else:
+        verify_m04(args.output)
+        print("Synthetic CI M04 verification passed "
+              "(4 EPSS CVEs, 5 bands, 0 and 1 preserved, quantiles reconciled)")
 
 
 if __name__ == "__main__":

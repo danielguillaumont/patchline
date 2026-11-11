@@ -27,3 +27,54 @@ models:
         data_tests: [not_null]
       - name: epss_source_date
         data_tests: [not_null]
+
+  - name: m04_epss_population_summary
+    description: >
+      M04 summary for the full selected EPSS population, not the KEV subset.
+      Quantiles refer to EPSS probability scores, not EPSS percentile ranks.
+    columns:
+      - name: metric_id
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['M04']
+      - name: epss_snapshot_id
+        data_tests: [not_null]
+      - name: epss_source_date
+        data_tests: [not_null]
+      - name: epss_retrieved_at_utc
+        data_tests: [not_null]
+      - name: epss_model_version
+        data_tests: [not_null]
+      - name: scored_cve_count
+        data_tests: [not_null]
+      - name: null_score_count
+        data_tests: [not_null]
+  - name: m04_epss_score_bands
+    description: >
+      M04 fixed, exhaustive EPSS score bands across all scored CVEs, including zero and one.
+      Five rows are returned even if the selected EPSS population is empty.
+    columns:
+      - name: band_order
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+      - name: metric_id
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['M04']
+      - name: epss_snapshot_id
+        data_tests: [not_null]
+      - name: epss_source_date
+        data_tests: [not_null]
+      - name: cve_count
+        data_tests: [not_null]
+      - name: denominator_scored_cves
+        data_tests: [not_null]

@@ -63,3 +63,7 @@ jobs:
         env:
           PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
         run: uv run --locked python -m patchline.fixtures.ci_warehouse verify-m03 --output "$PATCHLINE_DUCKDB_PATH"
+      - name: Verify M04 full-population distribution and score quantiles
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: uv run --locked python -m patchline.fixtures.ci_warehouse verify-m04 --output "$PATCHLINE_DUCKDB_PATH"

@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: m03_epss_coverage_of_kev
+    description: >
+      M03: one coverage row for the pinned KEV catalog and EPSS scoring date.
+      A descriptive coverage ratio, not an exploitation prediction.
+    columns:
+      - name: metric_id
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ['M03']
+      - name: numerator_matched_kev
+        data_tests: [not_null]
+      - name: denominator_total_kev
+        data_tests: [not_null]
+      - name: unmatched_kev
+        data_tests: [not_null]
+      - name: kev_snapshot_id
+        data_tests: [not_null]
+      - name: epss_snapshot_id
+        data_tests: [not_null]
+      - name: kev_catalog_date_released
+        data_tests: [not_null]
+      - name: epss_source_date
+        data_tests: [not_null]

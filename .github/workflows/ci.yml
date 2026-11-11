@@ -59,3 +59,7 @@ jobs:
         env:
           PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
         run: uv run --locked python -m patchline.fixtures.ci_warehouse verify-joins --output "$PATCHLINE_DUCKDB_PATH"
+      - name: Verify M03 coverage metric contract and source dates
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+        run: uv run --locked python -m patchline.fixtures.ci_warehouse verify-m03 --output "$PATCHLINE_DUCKDB_PATH"

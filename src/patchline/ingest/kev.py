@@ -127,9 +127,12 @@ def ingest_kev(
     if (catalog_bytes is None) != (schema_bytes is None):
         raise KEVIngestionError("Provide both fixture documents or neither")
     if catalog_bytes is None:
-        with httpx.Client(timeout=httpx.Timeout(30.0), follow_redirects=True) as client:
-            catalog_bytes = _download(client, CATALOG_URL)
-            schema_bytes = _download(client, SCHEMA_URL)
+        try:
+            with httpx.Client(timeout=httpx.Timeout(30.0), follow_redirects=True) as client:
+                catalog_bytes = _download(client, CATALOG_URL)
+                schema_bytes = _download(client, SCHEMA_URL)
+        except httpx.HTTPError as exc:
+            raise KEVIngestionError(f"CISA download failed: {type(exc).__name__}: {exc}") from exc
     assert schema_bytes is not None
     catalog = validate_kev(catalog_bytes, schema_bytes)
     catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()
@@ -156,9 +159,26 @@ def ingest_kev(
         "validation": "passed",
     }
     if manifest_file.exists():
-        old = json.loads(manifest_file.read_text(encoding="utf-8"))
-        if old.get("catalog_sha256") != catalog_sha or old.get("schema_sha256") != schema_sha:
-            raise KEVIngestionError("Existing snapshot manifest does not match source hashes")
+        try:
+            old = _require_object(json.loads(manifest_file.read_text(encoding="utf-8")), "manifest")
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise KEVIngestionError("Existing snapshot manifest is invalid JSON") from exc
+        # A matching catalog hash is insufficient: all recorded provenance must
+        # agree with the freshly validated source before reusing this snapshot.
+        for field, value in manifest.items():
+            if field == "retrieved_at_utc":
+                continue  # The original acquisition timestamp is preserved.
+            if old.get(field) != value:
+                raise KEVIngestionError(f"Existing snapshot manifest mismatch: {field}")
+        timestamp = old.get("retrieved_at_utc")
+        try:
+            if not isinstance(timestamp, str) or not timestamp.endswith("Z"):
+                raise ValueError("timestamp must end in Z")
+            original_time = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+            if original_time.utcoffset() != UTC.utcoffset(None):
+                raise ValueError("timestamp must be UTC")
+        except ValueError as exc:
+            raise KEVIngestionError("Existing snapshot manifest has invalid retrieval time") from exc
         if not catalog_file.is_file() or not schema_file.is_file():
             raise KEVIngestionError("Incomplete existing snapshot; manual review required")
         if hashlib.sha256(catalog_file.read_bytes()).hexdigest() != catalog_sha:

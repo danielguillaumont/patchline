@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: int_kev_epss_overlap
+    description: >
+      One row per CVE in the union of the selected KEV catalog and the complete
+      EPSS score-date population. A descriptive join, never a risk score.
+    columns:
+      - name: cve_id
+        data_tests: [not_null, unique]
+      - name: is_kev
+        data_tests: [not_null]
+      - name: has_epss_score
+        data_tests: [not_null]
+      - name: join_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['both', 'kev_only', 'epss_only']
+      - name: kev_snapshot_id
+        data_tests: [not_null]
+      - name: epss_snapshot_id
+        data_tests: [not_null]

@@ -120,17 +120,55 @@ def verify_staging(database: Path) -> None:
             raise ValueError("Expected exactly two matching fixture CVEs")
 
 
+
+def verify_joins(database: Path) -> None:
+    """Assert exact synthetic full-outer-join results after a real dbt run."""
+    verify_staging(database)
+    with duckdb.connect(str(database), read_only=True) as connection:
+        objects = connection.execute("""SELECT table_name, table_type
+            FROM information_schema.tables
+            WHERE table_schema = 'analytics_intermediate'""").fetchall()
+        if objects != [("int_kev_epss_overlap", "VIEW")]:
+            raise ValueError(f"Unexpected intermediate objects: {objects}")
+        rows = connection.execute("""SELECT cve_id, join_status, is_kev,
+                has_epss_score, epss, percentile, kev_snapshot_id, epss_snapshot_id,
+                score_date, date_added
+            FROM analytics_intermediate.int_kev_epss_overlap
+            ORDER BY cve_id""").fetchall()
+        expected = [
+            ("CVE-2099-0001", "both", True, True, 0.01, 0.2),
+            ("CVE-2099-0002", "both", True, True, 0.8, 0.95),
+            ("CVE-2099-0003", "kev_only", True, False, None, None),
+            ("CVE-2099-9001", "epss_only", False, True, 0.0, 0.0),
+            ("CVE-2099-9002", "epss_only", False, True, 1.0, 1.0),
+        ]
+        for actual, (cve, status, in_kev, scored, score, percentile) in zip(
+            rows, expected, strict=True
+        ):
+            if actual[:6] != (cve, status, in_kev, scored, score, percentile):
+                raise ValueError(f"Unexpected join result for {cve}: {actual[:6]}")
+            if actual[6:8] != (KEV_ID, EPSS_ID):
+                raise ValueError(f"Invalid paired lineage for {cve}")
+            if (actual[8] is not None) != scored or (actual[9] is not None) != in_kev:
+                raise ValueError(f"Invalid source-specific null policy for {cve}")
+        if len(rows) != len(expected):
+            raise ValueError(f"Unexpected joined CVE count: {len(rows)}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("create", "verify"))
+    parser.add_argument("action", choices=("create", "verify", "verify-joins"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "create":
         create_fixture(args.output)
         print(f"Synthetic CI warehouse created: {args.output}")
-    else:
+    elif args.action == "verify":
         verify_staging(args.output)
         print("Synthetic CI staging verification passed (3 KEV, 4 EPSS, 2 matched)")
+    else:
+        verify_joins(args.output)
+        print("Synthetic CI join verification passed (2 both, 1 KEV-only, 2 EPSS-only)")
 
 
 if __name__ == "__main__":

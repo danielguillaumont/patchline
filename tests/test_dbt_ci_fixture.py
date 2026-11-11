@@ -7,7 +7,7 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from patchline.fixtures.ci_warehouse import create_fixture, verify_joins, verify_staging
+from patchline.fixtures.ci_warehouse import create_fixture, verify_joins, verify_m03, verify_staging
 
 
 def test_fixture_raw_schema_counts_and_lineage(tmp_path: Path) -> None:
@@ -74,3 +74,24 @@ def test_join_verifier_requires_intermediate_view(tmp_path: Path) -> None:
             SELECT * FROM main.raw_epss_daily""")
     with pytest.raises(ValueError, match="Unexpected intermediate objects"):
         verify_joins(output)
+
+
+def test_m03_verifier_requires_staging_first(tmp_path: Path) -> None:
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with pytest.raises(ValueError, match="Unexpected staging objects"):
+        verify_m03(output)
+
+
+def test_m03_verifier_rejects_missing_mart(tmp_path: Path) -> None:
+    """A source-only fixture can never be mistaken for computed M03 evidence."""
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with duckdb.connect(str(output)) as con:
+        con.execute("CREATE SCHEMA analytics_staging")
+        con.execute("""CREATE VIEW analytics_staging.stg_kev AS
+            SELECT * FROM main.raw_kev_snapshot""")
+        con.execute("""CREATE VIEW analytics_staging.stg_epss AS
+            SELECT * FROM main.raw_epss_daily""")
+    with pytest.raises(ValueError, match="Unexpected intermediate objects"):
+        verify_m03(output)

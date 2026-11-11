@@ -155,9 +155,42 @@ def verify_joins(database: Path) -> None:
             raise ValueError(f"Unexpected joined CVE count: {len(rows)}")
 
 
+
+
+def verify_m03(database: Path) -> None:
+    """Verify the real dbt M03 view against synthetic source-pair expectations."""
+    verify_joins(database)
+    with duckdb.connect(str(database), read_only=True) as connection:
+        objects = connection.execute("""SELECT table_name, table_type
+            FROM information_schema.tables
+            WHERE table_schema = 'analytics_marts'""").fetchall()
+        if objects != [("m03_epss_coverage_of_kev", "VIEW")]:
+            raise ValueError(f"Unexpected M03 objects: {objects}")
+        rows = connection.execute("""SELECT metric_id, metric_label, metric_unit,
+                kev_snapshot_id, epss_snapshot_id, kev_catalog_date_released,
+                epss_source_date, epss_model_version, numerator_matched_kev,
+                denominator_total_kev, unmatched_kev, coverage_percent,
+                population, filter_definition, null_policy, caveat,
+                kev_retrieved_at_utc, epss_retrieved_at_utc
+            FROM analytics_marts.m03_epss_coverage_of_kev""").fetchall()
+        if len(rows) != 1:
+            raise ValueError(f"Expected one M03 row, got {len(rows)}")
+        row = rows[0]
+        expected = (
+            "M03", "EPSS coverage of KEV", "percent", KEV_ID, EPSS_ID,
+            "2026-01-15T00:00:00Z", "2026-01-15", "v-ci-synthetic",
+            2, 3, 1,
+        )
+        if row[:11] != expected:
+            raise ValueError(f"Unexpected M03 counts or source lineage: {row[:11]}")
+        if abs(row[11] - 200.0 / 3.0) > 1e-9:
+            raise ValueError(f"Unexpected M03 percentage: {row[11]}")
+        if any(not isinstance(value, str) or not value.strip() for value in row[12:]):
+            raise ValueError("M03 population, caveats or retrieval metadata missing")
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("create", "verify", "verify-joins"))
+    parser.add_argument("action", choices=("create", "verify", "verify-joins", "verify-m03"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "create":
@@ -166,9 +199,13 @@ def main() -> None:
     elif args.action == "verify":
         verify_staging(args.output)
         print("Synthetic CI staging verification passed (3 KEV, 4 EPSS, 2 matched)")
-    else:
+    elif args.action == "verify-joins":
         verify_joins(args.output)
         print("Synthetic CI join verification passed (2 both, 1 KEV-only, 2 EPSS-only)")
+    else:
+        verify_m03(args.output)
+        print("Synthetic CI M03 verification passed "
+              "(2 matched / 3 KEV, 1 unmatched, 66.666... percent)")
 
 
 if __name__ == "__main__":

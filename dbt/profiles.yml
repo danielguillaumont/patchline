@@ -1,0 +1,9 @@
+# No secrets: the operator supplies an existing local DuckDB database path.
+patchline_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('PATCHLINE_DUCKDB_PATH') }}"
+      schema: analytics
+      threads: 2

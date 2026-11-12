@@ -62,3 +62,28 @@ jobs:
           name: spectral-index-pages-preview
           path: apps/web/dist/
           retention-days: 7
+      - name: Upload verified GitHub Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist/
+
+  deploy:
+    name: Deploy verified Spectral Index
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: static-preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Deploy verified site
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -44,3 +44,6 @@ apps/web/dist/
 
 # Portfolio screenshot runner's Playwright scratch output
 /apps/web/test-results-portfolio/
+
+# Production-subpath Playwright preview scratch output
+/apps/web/test-results-pages/

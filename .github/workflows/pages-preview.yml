@@ -1,0 +1,64 @@
+name: Spectral Index Pages Preview
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  static-preview:
+    name: Synthetic Pages static preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install Python toolchain
+        run: uv sync --locked --python 3.12
+      - name: Install frontend toolchain
+        working-directory: apps/web
+        run: npm ci
+      - name: Produce and verify synthetic v2 exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATCHLINE_DUCKDB_PATH="${RUNNER_TEMP}/patchline-pages-fixture.duckdb"
+          EXPORT_DIR="${RUNNER_TEMP}/patchline-pages-exports"
+          uv run --locked python -m patchline.fixtures.ci_warehouse create --output "$PATCHLINE_DUCKDB_PATH"
+          uv run --locked dbt run --project-dir dbt --profiles-dir dbt
+          uv run --locked dbt test --project-dir dbt --profiles-dir dbt
+          uv run --locked python -m patchline.fixtures.ci_warehouse verify-m05 --output "$PATCHLINE_DUCKDB_PATH"
+          uv run --locked python -m patchline.exports.analytics create --contract v2 --database "$PATCHLINE_DUCKDB_PATH" --output "$EXPORT_DIR"
+          uv run --locked python -m patchline.exports.analytics verify --output "$EXPORT_DIR"
+          node apps/web/scripts/stage-pages-data.mjs --exports "$EXPORT_DIR" --destination "${RUNNER_TEMP}/patchline-pages-public/demo"
+      - name: Test root and Pages URL guards
+        working-directory: apps/web
+        run: npm test
+      - name: Build GitHub Pages subpath
+        working-directory: apps/web
+        env:
+          PATCHLINE_E2E_PUBLIC_DIR: ${{ runner.temp }}/patchline-pages-public
+        run: npm run build:pages
+      - name: Verify static build and published data boundary
+        run: node apps/web/scripts/verify-pages-dist.mjs --dist apps/web/dist
+      - name: Install Chromium for production-base smoke tests
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Test production build at /patchline/
+        working-directory: apps/web
+        run: npx playwright test --config playwright.pages.config.mjs
+      - name: Upload Pages-ready preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spectral-index-pages-preview
+          path: apps/web/dist/
+          retention-days: 7

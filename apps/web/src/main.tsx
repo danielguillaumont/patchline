@@ -4,6 +4,7 @@ import { validateBundle } from './contract.mjs';
 import { bandReading } from './band-inspector.mjs';
 import { artifactReading } from './evidence-inspector.mjs';
 import { cohortReading, cohortPercent } from './cohort-inspector.mjs';
+import { demoFileUrl } from './demo-url.mjs';
 import './styles.css';
 
 type Source = {source:string; snapshot_id:string; source_date:string; retrieved_at_utc?:string; row_count:number; model_version?:string|null};
@@ -17,7 +18,7 @@ type Bundle = {manifest:Manifest;coverage:Metric;population:Population;bands:Ban
 type View = 'atlas'|'explorer'|'methods';
 const coreFiles = ['m03_epss_coverage_of_kev.json','m04_epss_population_summary.json','m04_epss_score_bands.json'];
 async function readDemoFile(name:string, signal:AbortSignal):Promise<unknown> {
-  const response = await fetch(`/demo/${name}`, {signal, cache:'no-store'});
+  const response = await fetch(demoFileUrl(import.meta.env.BASE_URL, name), {signal, cache:'no-store'});
   if (!response.ok) throw Error(`Missing verified demo export: ${name} (${response.status})`);
   return response.json() as Promise<unknown>;
 }

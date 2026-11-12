@@ -78,3 +78,43 @@ models:
         data_tests: [not_null]
       - name: denominator_scored_cves
         data_tests: [not_null]
+
+  - name: m05_kev_epss_cohort_bands
+    description: >
+      M05 provides five scored KEV cohorts using identical M04 thresholds plus
+      a sixth no-match KEV category. Distinguish all-KEV, scored-KEV, and full-EPSS
+      denominators; this is descriptive analysis, not a predictive risk ranking.
+    columns:
+      - name: metric_id
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['M05']
+      - name: band_order
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6]
+      - name: cohort_category
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['scored_band', 'unscored_kev']
+      - name: kev_cve_count
+        data_tests: [not_null]
+      - name: denominator_all_kev
+        data_tests: [not_null]
+      - name: denominator_scored_kev
+        data_tests: [not_null]
+      - name: unscored_kev
+        data_tests: [not_null]
+      - name: kev_snapshot_id
+        data_tests: [not_null]
+      - name: epss_snapshot_id
+        data_tests: [not_null]
+      - name: epss_source_date
+        data_tests: [not_null]

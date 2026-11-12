@@ -12,6 +12,7 @@ from patchline.fixtures.ci_warehouse import (
     verify_joins,
     verify_m03,
     verify_m04,
+    verify_m05,
     verify_staging,
 )
 
@@ -122,3 +123,23 @@ def test_m04_fixture_is_full_epss_population(tmp_path: Path) -> None:
             FROM main.raw_epss_daily e
             LEFT JOIN main.raw_kev_snapshot k ON e.cve_id = k.cve_id""").fetchone()
         assert counts == (4, 1, 2)
+
+
+def test_m05_verifier_requires_computed_views(tmp_path: Path) -> None:
+    """M05 verification must reject an untransformed source-only warehouse."""
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with pytest.raises(ValueError, match="Unexpected staging objects"):
+        verify_m05(output)
+
+
+def test_m05_expected_kevs_include_one_unmatched(tmp_path: Path) -> None:
+    """The tiny fixture has two matched KEV CVEs and a third with no EPSS row."""
+    output = tmp_path / "ci.duckdb"
+    create_fixture(output)
+    with duckdb.connect(str(output), read_only=True) as con:
+        count = con.execute("""SELECT count(*), count(e.cve_id),
+            count(*) filter (where e.cve_id is null)
+            FROM main.raw_kev_snapshot k
+            LEFT JOIN main.raw_epss_daily e ON k.cve_id = e.cve_id""").fetchone()
+        assert count == (3, 2, 1)

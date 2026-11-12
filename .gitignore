@@ -32,3 +32,6 @@ apps/web/dist/
 .env.*
 !.env.example
 /dbt/.user.yml
+
+# Local browser demo exports, never commit unreviewed dataset bundles
+/apps/web/public/demo/

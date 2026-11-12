@@ -25,6 +25,26 @@ jobs:
       - name: Lint
         run: uv run --locked ruff check .
 
+  frontend:
+    name: Spectral Index frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm ci
+      - name: Test frontend contracts
+        run: npm test
+      - name: Build frontend
+        run: npm run build
+
   dbt:
     name: dbt offline fixture
     runs-on: ubuntu-latest

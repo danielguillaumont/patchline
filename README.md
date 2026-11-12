@@ -57,6 +57,22 @@ Archived KEV and EPSS snapshots
 
 **Interpretation matters:** EPSS is a model estimate of exploitation probability over the next 30 days. KEV membership indicates known exploitation. Neither by itself measures exposure, business impact, or risk in a specific environment. The scored KEV cohort is part of the full EPSS population, not an independent sample.
 
+## Quick start: verified synthetic demo
+
+On Windows, use PowerShell 5.1 with Node.js 22 or newer, uv, and Python 3.12 available to uv.
+
+Run `.\scripts\Start-PatchlineDemo.ps1` from the repository root.
+
+The launcher creates an isolated synthetic DuckDB warehouse, runs dbt tests, verifies a v2 export, and starts Spectral Index locally.
+
+Open the local URL displayed by the launcher. All measurements are synthetic test data, not live vulnerability statistics.
+
+Press Ctrl+C to stop the demo.
+
+If port 5173 is busy, stop the existing Vite server or run `.\scripts\Start-PatchlineDemo.ps1 -Port 5174`.
+
+For prerequisites and cleanup details, see the [local demo guide](docs/demo-p52b.md).
+
 ## Reproduce the pipeline
 
 Requirements: **Python 3.12**, [uv](https://docs.astral.sh/uv/), and a local shell. These PowerShell 5.1 commands create an isolated, invented fixture without downloading live vulnerability feeds:

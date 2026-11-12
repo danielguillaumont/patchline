@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const web = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const contract = process.argv.includes('--v2') ? 'v2' : 'v1';
 const repo = resolve(web, '..', '..');
 const temp = mkdtempSync(join(tmpdir(), 'patchline-e2e-'));
 const database = join(temp, 'fixture.duckdb');
@@ -19,6 +20,7 @@ const names = [
   'm04_epss_population_summary.json',
   'm04_epss_score_bands.json',
 ];
+if (contract === 'v2') names.push('m05_kev_epss_cohort_bands.json');
 let server;
 let cleaned = false;
 
@@ -46,11 +48,12 @@ try {
   const dbEnv = { PATCHLINE_DUCKDB_PATH: database };
   run(['run', '--locked', 'dbt', 'run', '--project-dir', 'dbt', '--profiles-dir', 'dbt'], dbEnv);
   run(['run', '--locked', 'dbt', 'test', '--project-dir', 'dbt', '--profiles-dir', 'dbt'], dbEnv);
-  run(['run', '--locked', 'python', '-m', 'patchline.exports.analytics', 'create', '--database', database, '--output', exportDir]);
+  run(['run', '--locked', 'python', '-m', 'patchline.exports.analytics', 'create', '--contract', contract, '--database', database, '--output', exportDir]);
   run(['run', '--locked', 'python', '-m', 'patchline.exports.analytics', 'verify', '--output', exportDir]);
   const manifest = JSON.parse(readFileSync(join(exportDir, 'manifest.json'), 'utf8'));
-  if (manifest.data_kind !== 'synthetic_fixture' || manifest.artifacts?.length !== 9) {
-    throw Error('Browser fixture failed synthetic classification or nine-artifact boundary');
+  if (manifest.data_kind !== 'synthetic_fixture' || manifest.schema_id !== `patchline.analytics-export.${contract}`
+      || manifest.artifacts?.length !== (contract === 'v2' ? 12 : 9)) {
+    throw Error('Browser fixture failed synthetic classification or versioned artifact boundary');
   }
   mkdirSync(demoDir, { recursive: true });
   for (const name of names) {
@@ -58,7 +61,7 @@ try {
     if (!existsSync(file)) throw Error(`Verified fixture missing ${name}`);
     copyFileSync(file, join(demoDir, name));
   }
-  console.log('Launching isolated browser-test Vite server on 127.0.0.1:5175');
+  console.log(`Launching isolated ${contract} browser-test Vite server on 127.0.0.1:5175`);
   server = spawn(process.execPath, [
     join(web, 'node_modules', 'vite', 'bin', 'vite.js'),
     '--config', 'vite.e2e.config.mjs', '--host', '127.0.0.1', '--port', '5175', '--strictPort',

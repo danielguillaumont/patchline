@@ -1,12 +1,14 @@
 import {validateArtifactRegister} from './evidence-inspector.mjs';
+import {validateCohort} from './cohort-inspector.mjs';
 // Local, intentionally narrow read-only consumer guard. Backend JSON Schemas remain authoritative.
 const records = (value, n) => Array.isArray(value) && value.length === n && value.every(x => x && typeof x === 'object' && !Array.isArray(x));
 const integer = (n) => Number.isSafeInteger(n) && n >= 0;
 const finite = (n) => typeof n === 'number' && Number.isFinite(n);
 const probability = (n) => n === null || (finite(n) && n >= 0 && n <= 1);
-export function validateBundle(manifest, m03, summary, bands) {
-  if (!manifest || manifest.schema_id !== 'patchline.analytics-export.v1' || !['synthetic_fixture','archived_source_snapshots'].includes(manifest.data_kind)) throw Error('Unsupported export manifest or data classification');
-  if (!records(manifest.source_snapshots, 2) || !records(manifest.artifacts, 9)) throw Error('Incomplete source manifest');
+export function validateBundle(manifest, m03, summary, bands, m05) {
+  const version = manifest?.schema_id === 'patchline.analytics-export.v2' ? 'v2' : 'v1';
+  if (!manifest || !['patchline.analytics-export.v1', 'patchline.analytics-export.v2'].includes(manifest.schema_id) || !['synthetic_fixture','archived_source_snapshots'].includes(manifest.data_kind)) throw Error('Unsupported export manifest or data classification');
+  if (!records(manifest.source_snapshots, 2) || !records(manifest.artifacts, version === 'v2' ? 12 : 9)) throw Error('Incomplete source manifest');
   const sources = Object.fromEntries(manifest.source_snapshots.map(s => [s.source, s]));
   if (!sources.kev || !sources.epss || ![sources.kev,sources.epss].every(s => typeof s.snapshot_id === 'string' && s.snapshot_id.length > 0 && typeof s.source_date === 'string' && integer(s.row_count))) throw Error('Invalid source lineage');
   if (!records(m03, 1) || !records(summary, 1) || !records(bands, 5)) throw Error('Incorrect analytical model row counts');
@@ -18,8 +20,11 @@ export function validateBundle(manifest, m03, summary, bands) {
   const sorted = [...bands].sort((a,b)=>a.band_order-b.band_order);
   if (sorted.some((b,i)=> b.band_order!==i+1 || b.metric_id!=='M04' || !integer(b.cve_count) || b.denominator_scored_cves!==s.scored_cve_count || b.epss_snapshot_id!==sources.epss.snapshot_id || b.epss_source_date!==sources.epss.source_date || (s.scored_cve_count ? !finite(b.population_percent) || Math.abs(b.population_percent-100*b.cve_count/s.scored_cve_count)>1e-6 : b.population_percent!==null))) throw Error('Band contract mismatch');
   if (sorted.reduce((n,b)=>n+b.cve_count,0)!==s.scored_cve_count) throw Error('EPSS band reconciliation failed');
-  validateArtifactRegister(manifest.artifacts, {m03_epss_coverage_of_kev:1,m04_epss_population_summary:1,m04_epss_score_bands:5});
+  const rowCounts = {m03_epss_coverage_of_kev:1,m04_epss_population_summary:1,m04_epss_score_bands:5};
+  if (version === 'v2') rowCounts.m05_kev_epss_cohort_bands = 6;
+  validateArtifactRegister(manifest.artifacts, rowCounts);
   if (!manifest.validation || manifest.validation.kev_total!==c.denominator_total_kev || manifest.validation.kev_matched!==c.numerator_matched_kev || manifest.validation.kev_unmatched!==c.unmatched_kev || manifest.validation.epss_scored_total!==s.scored_cve_count) throw Error('Export manifest validation counters disagree with analytical marts');
   if (!['min_epss','max_epss','mean_epss','p25_epss','median_epss','p75_epss','p90_epss'].every(k=>probability(s[k]))) throw Error('Invalid EPSS probability');
-  return {manifest, coverage:c, population:s, bands:sorted};
+  const cohort = version === 'v2' ? validateCohort(manifest, c, s, sorted, m05) : null;
+  return {manifest, coverage:c, population:s, bands:sorted, cohort};
 }

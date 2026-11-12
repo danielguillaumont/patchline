@@ -10,8 +10,8 @@ Patchline is a local-first security and data engineering project pairing archive
 - **Warehouse and dbt:** DuckDB staging, a full CVE-universe KEV/EPSS join, analytical marts, reconciliation and source-lineage tests.
 - **M03:** EPSS score coverage for the selected KEV catalog, including unmatched CVEs.
 - **M04:** EPSS full-scored-population summary and five fixed probability bands.
-- **M05 (P5.1A):** KEV cohort membership across those same five bands plus an explicit unscored KEV category. This mart is not yet in the published export contract or website.
-- **Exports:** an immutable, verified v1 bundle of **nine CSV, JSON, and Parquet artifacts** for M03/M04, including manifest and SHA-256 integrity metadata. This is not a live vulnerability feed.
+- **M05:** KEV cohort membership across those same five bands plus an explicit unscored KEV category. Published in opt-in v2 exports, not yet consumed by the website.
+- **Exports:** immutable, verified v1 bundles of **nine dataset artifacts** (M03/M04), with opt-in v2 bundles of **twelve** (adding M05); CSV, JSON, Parquet, and manifest SHA-256 metadata. Neither is a live vulnerability feed.
 - **Spectral Index:** responsive Intelligence Atlas, interactive EPSS band details, nine-file evidence register, and Methods & Quality views. Vulnerability Explorer is explicitly a preview rather than an invented CVE database.
 - **Quality gates:** Python tests, dbt data tests, frontend tests, and isolated Chromium/Playwright browser checks in GitHub Actions.
 
@@ -28,12 +28,14 @@ Archived KEV / EPSS source files
             |
    M03 + M04 + M05 analytical marts
             |
-    Verified export v1 (M03/M04 only)
+  Verified v1 (M03/M04) or v2 (+ M05)
             |
-  React / TypeScript Spectral Index
+  React / TypeScript Spectral Index (v1)
 ```
 
 **Important data boundary:** the public demo uses an explicitly labeled **synthetic fixture**. Demo values must not be described as actual current exploitation activity. EPSS scores are model estimates, not observations of exploitation; KEV catalog inclusion is not evidence of exposure in any specific organization. The website displays manifest-recorded digests but does not perform browser-side cryptographic verification.
+
+Versioned export usage and the v2 migration boundary are documented in [P5.1B exports](docs/exports-p51b.md).
 
 ## Reproduce the offline pipeline
 
@@ -76,4 +78,4 @@ For the reproducible browser suite, run `npx playwright install chromium` follow
 - CISA KEV: https://github.com/cisagov/kev-data
 - FIRST EPSS: https://www.first.org/epss/data
 
-**Next:** version the M05 consumer export without breaking the existing nine-file bundle, then introduce a clearly labeled scored-KEV versus full-EPSS comparison visualization.
+**Next:** migrate the Spectral Index consumer to opt-in v2 and introduce a clearly labeled scored-KEV versus full-EPSS comparison visualization.

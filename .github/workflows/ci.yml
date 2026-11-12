@@ -117,3 +117,10 @@ jobs:
         run: |
           uv run --locked python -m patchline.exports.analytics create --database "$PATCHLINE_DUCKDB_PATH" --output "$PATCHLINE_EXPORT_DIR"
           uv run --locked python -m patchline.exports.analytics verify --output "$PATCHLINE_EXPORT_DIR"
+      - name: Publish and verify v2 M05 cohort exports
+        env:
+          PATCHLINE_DUCKDB_PATH: ${{ runner.temp }}/patchline-ci.duckdb
+          PATCHLINE_EXPORT_DIR: ${{ runner.temp }}/patchline-ci-exports-v2
+        run: |
+          uv run --locked python -m patchline.exports.analytics create --contract v2 --database "$PATCHLINE_DUCKDB_PATH" --output "$PATCHLINE_EXPORT_DIR"
+          uv run --locked python -m patchline.exports.analytics verify --output "$PATCHLINE_EXPORT_DIR"

@@ -201,7 +201,7 @@ def verify_m04(database: Path) -> None:
             "m04_epss_population_summary",
             "m04_epss_score_bands",
         }
-        if names != required:
+        if names not in (required, required | {"m05_kev_epss_cohort_bands"}):
             raise ValueError(f"Unexpected M04 mart objects: {names}")
 
         summary = connection.execute("""SELECT metric_id, epss_snapshot_id,
@@ -238,9 +238,57 @@ def verify_m04(database: Path) -> None:
             if snap != EPSS_ID or source_date != "2026-01-15" or inclusive != (order == 5):
                 raise ValueError(f"Unexpected M04 band lineage or boundary: {band}")
 
+
+def verify_m05(database: Path) -> None:
+    """Verify M05 counts, three distinct denominators, and paired provenance."""
+    verify_m04(database)
+    with duckdb.connect(str(database), read_only=True) as connection:
+        rows = connection.execute("""SELECT band_order, metric_id, cohort_category,
+            band_label, kev_cve_count, denominator_all_kev, denominator_scored_kev,
+            unscored_kev, share_all_kev_percent, share_scored_kev_percent,
+            full_epss_band_count, full_epss_denominator, full_epss_population_percent,
+            lower_bound, upper_bound, upper_inclusive, kev_snapshot_id, epss_snapshot_id,
+            kev_catalog_date_released, epss_source_date, epss_model_version
+            FROM analytics_marts.m05_kev_epss_cohort_bands ORDER BY band_order""").fetchall()
+        if len(rows) != 6:
+            raise ValueError(f"Expected exactly six M05 cohorts, got {len(rows)}")
+        kev_expected = (0, 0, 1, 0, 1, 1)
+        epss_expected = (1, 0, 1, 0, 2)
+        for order, row in enumerate(rows, start=1):
+            (number, metric, category, label, count, all_kev, scored_kev, unmatched,
+             all_share, scored_share, full_count, full_total, full_share,
+             lower, upper, inclusive, kev_id, epss_id, kev_date, epss_date,
+             model_version) = row
+            if (number, metric, count, all_kev, scored_kev, unmatched) != (
+                order, "M05", kev_expected[order - 1], 3, 2, 1
+            ):
+                raise ValueError(f"Incorrect M05 cohort count or denominators: {row}")
+            if (kev_id, epss_id, kev_date, epss_date, model_version) != (
+                KEV_ID, EPSS_ID, "2026-01-15T00:00:00Z", "2026-01-15", "v-ci-synthetic"
+            ):
+                raise ValueError(f"M05 source lineage mismatch: {row}")
+            if abs(all_share - 100 * count / 3) > 1e-9:
+                raise ValueError(f"Incorrect M05 all-KEV share: {row}")
+            if order < 6:
+                if category != "scored_band" or (full_count, full_total) != (
+                    epss_expected[order - 1], 4
+                ):
+                    raise ValueError(f"Incorrect M05 full EPSS comparison: {row}")
+                if (abs(scored_share - 100 * count / 2) > 1e-9
+                        or abs(full_share - 25 * full_count) > 1e-9):
+                    raise ValueError(f"Incorrect M05 population shares: {row}")
+                if label is None or lower is None or upper is None or inclusive != (order == 5):
+                    raise ValueError(f"Invalid M05 score-band definitions: {row}")
+            elif (category != "unscored_kev" or label != "No matching EPSS score"
+                  or any(v is not None for v in
+                         (scored_share, full_count, full_total, full_share, lower,
+                          upper, inclusive))):
+                raise ValueError(f"Unscored KEV must not be given a score: {row}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("create", "verify", "verify-joins", "verify-m03", "verify-m04"))
+    parser.add_argument("action", choices=("create", "verify", "verify-joins", "verify-m03", "verify-m04", "verify-m05"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "create":
@@ -256,10 +304,14 @@ def main() -> None:
         verify_m03(args.output)
         print("Synthetic CI M03 verification passed "
               "(2 matched / 3 KEV, 1 unmatched, 66.666... percent)")
-    else:
+    elif args.action == "verify-m04":
         verify_m04(args.output)
         print("Synthetic CI M04 verification passed "
               "(4 EPSS CVEs, 5 bands, 0 and 1 preserved, quantiles reconciled)")
+    else:
+        verify_m05(args.output)
+        print("Synthetic CI M05 verification passed "
+              "(KEV counts 0, 0, 1, 0, 1, 1; denominators 3 KEV, 2 matched, 4 EPSS)")
 
 
 if __name__ == "__main__":

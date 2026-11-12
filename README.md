@@ -1,28 +1,79 @@
-# PATCHLINE / Vulnerability intelligence. Decision-ready data.
+# Patchline
 
-**Status:** P1 foundation (in progress). No live ingestion, warehouse or published report exists yet.
+**Reproducible vulnerability intelligence analytics with an evidence-first frontend.**
 
-Patchline is a local-first data analytics portfolio project combining **CISA KEV** and **FIRST EPSS** public sources. The intended product is a reproducible Python/DuckDB/dbt pipeline plus Power BI analysis and a bespoke static React site.
+Patchline is a local-first security and data engineering project pairing archived **CISA Known Exploited Vulnerabilities (KEV)** catalog snapshots with **FIRST Exploit Prediction Scoring System (EPSS)** daily probability scores. It combines Python ingestion and validation, immutable source metadata, DuckDB, dbt models, versioned analytical exports, and the React/TypeScript **Spectral Index** website.
 
-## Run offline foundation checks
+## Implemented
 
-```powershell
-uv sync --python 3.12
-uv run python -m patchline --version
-uv run python -m patchline doctor --fixture
-uv run pytest
-uv run ruff check .
+- **Source ingestion:** guarded KEV and EPSS ingestion, schema checks, row-count and snapshot provenance, with local archived inputs.
+- **Warehouse and dbt:** DuckDB staging, a full CVE-universe KEV/EPSS join, analytical marts, reconciliation and source-lineage tests.
+- **M03:** EPSS score coverage for the selected KEV catalog, including unmatched CVEs.
+- **M04:** EPSS full-scored-population summary and five fixed probability bands.
+- **M05 (P5.1A):** KEV cohort membership across those same five bands plus an explicit unscored KEV category. This mart is not yet in the published export contract or website.
+- **Exports:** an immutable, verified v1 bundle of **nine CSV, JSON, and Parquet artifacts** for M03/M04, including manifest and SHA-256 integrity metadata. This is not a live vulnerability feed.
+- **Spectral Index:** responsive Intelligence Atlas, interactive EPSS band details, nine-file evidence register, and Methods & Quality views. Vulnerability Explorer is explicitly a preview rather than an invented CVE database.
+- **Quality gates:** Python tests, dbt data tests, frontend tests, and isolated Chromium/Playwright browser checks in GitHub Actions.
+
+## Architecture
+
+```text
+Archived KEV / EPSS source files
+            |
+  Python validation and ingestion
+            |
+       DuckDB warehouse
+            |
+  dbt staging + CVE full outer join
+            |
+   M03 + M04 + M05 analytical marts
+            |
+    Verified export v1 (M03/M04 only)
+            |
+  React / TypeScript Spectral Index
 ```
 
-The fixture doctor validates local sample-data shapes only. **It does not download or validate official feeds.**
+**Important data boundary:** the public demo uses an explicitly labeled **synthetic fixture**. Demo values must not be described as actual current exploitation activity. EPSS scores are model estimates, not observations of exploitation; KEV catalog inclusion is not evidence of exposure in any specific organization. The website displays manifest-recorded digests but does not perform browser-side cryptographic verification.
 
-## Source attribution
+## Reproduce the offline pipeline
 
+Python 3.12 and [uv](https://docs.astral.sh/uv/) are required. From the repository root in PowerShell 5.1:
+
+```powershell
+uv sync --locked --python 3.12
+$env:PATCHLINE_DUCKDB_PATH = Join-Path $env:TEMP ("patchline-ci-" + [guid]::NewGuid().ToString("N") + ".duckdb")
+uv run --locked python -m patchline.fixtures.ci_warehouse create --output $env:PATCHLINE_DUCKDB_PATH
+uv run --locked dbt run --project-dir dbt --profiles-dir dbt
+uv run --locked dbt test --project-dir dbt --profiles-dir dbt
+uv run --locked python -m patchline.fixtures.ci_warehouse verify-m05 --output $env:PATCHLINE_DUCKDB_PATH
+uv run --locked pytest
+uv run --locked ruff check .
+```
+
+These commands use a small, fully invented fixture and require no live feed download. The fixture creation command refuses to overwrite existing databases. Run the M03/M04 export workflow only after the source and dbt checks pass; see [export instructions](docs/exports-p34.md) and [M05 methodology](docs/dbt-p51-m05.md).
+
+## Run Spectral Index
+
+Node.js 22 is required. In a separate frontend terminal:
+
+```powershell
+Push-Location "apps/web"
+npm ci
+npm test
+npm run build
+npm run dev -- --strictPort
+# In the frontend terminal, use Ctrl + C to stop the server.
+```
+
+For the reproducible browser suite, run `npx playwright install chromium` followed by `npm run test:e2e` from `apps/web`. The test runner creates and verifies a synthetic fixture and starts an isolated server. To view populated local demo pages outside the test suite, follow [frontend fixture setup](docs/frontend-p41.md). Do not commit generated data, fixtures, browser screenshots, or local warehouse files.
+
+## Methodology and source credit
+
+- [Architecture notes](docs/architecture.md)
+- [M03 coverage](docs/dbt-p33-m03.md), [M04 distribution](docs/dbt-p33-m04.md), [M05 cohort analysis](docs/dbt-p51-m05.md)
+- [Export and integrity contracts](docs/exports-p34-consumers.md)
+- [Spectral Index](docs/frontend-p41b3.md)
 - CISA KEV: https://github.com/cisagov/kev-data
 - FIRST EPSS: https://www.first.org/epss/data
 
-## Roadmap
-
-P0 design & metric contracts -> P1 reproducible foundation -> P2 ingestion -> P3 warehouse -> P4 analyst case study -> P5 Power BI -> P6 web atlas -> P7 verified release.
-
-Data limitations and source-date semantics will be recorded in `docs/methodology.md`.
+**Next:** version the M05 consumer export without breaking the existing nine-file bundle, then introduce a clearly labeled scored-KEV versus full-EPSS comparison visualization.

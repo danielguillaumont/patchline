@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchline.local/contracts/manifest.v2.json",
+  "type": "object",
+  "required": [
+    "schema_id",
+    "data_kind",
+    "source_snapshots",
+    "validation",
+    "artifacts",
+    "notes"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "patchline.analytics-export.v2"
+    },
+    "data_kind": {
+      "enum": [
+        "synthetic_fixture",
+        "archived_source_snapshots"
+      ]
+    },
+    "source_snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source",
+          "snapshot_id",
+          "source_date",
+          "retrieved_at_utc",
+          "model_version",
+          "row_count"
+        ],
+        "properties": {
+          "source": {
+            "enum": [
+              "kev",
+              "epss"
+            ]
+          },
+          "snapshot_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_date": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retrieved_at_utc": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "row_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "validation": {
+      "type": "object",
+      "required": [
+        "kev_total",
+        "kev_matched",
+        "kev_unmatched",
+        "epss_scored_total"
+      ],
+      "properties": {
+        "kev_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kev_matched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kev_unmatched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "epss_scored_total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "rows",
+          "columns",
+          "model"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(m03_epss_coverage_of_kev|m04_epss_population_summary|m04_epss_score_bands|m05_kev_epss_cohort_bands)\\.(csv|json|parquet)$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "model": {
+            "enum": [
+              "m03_epss_coverage_of_kev",
+              "m04_epss_population_summary",
+              "m04_epss_score_bands",
+              "m05_kev_epss_cohort_bands"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 12,
+      "maxItems": 12
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}

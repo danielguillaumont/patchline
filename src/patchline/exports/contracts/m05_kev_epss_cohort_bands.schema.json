@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patchline.local/contracts/m05_kev_epss_cohort_bands.v2.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "metric_id",
+      "band_order",
+      "cohort_category",
+      "band_label",
+      "kev_snapshot_id",
+      "epss_snapshot_id",
+      "kev_catalog_date_released",
+      "epss_source_date",
+      "kev_retrieved_at_utc",
+      "epss_retrieved_at_utc",
+      "epss_model_version",
+      "kev_cve_count",
+      "denominator_all_kev",
+      "denominator_scored_kev",
+      "unscored_kev",
+      "lower_bound",
+      "upper_bound",
+      "upper_inclusive",
+      "share_all_kev_percent",
+      "share_scored_kev_percent",
+      "full_epss_band_count",
+      "full_epss_denominator",
+      "full_epss_population_percent"
+    ],
+    "properties": {
+      "metric_id": {
+        "const": "M05"
+      },
+      "band_order": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 6
+      },
+      "cohort_category": {
+        "enum": [
+          "scored_band",
+          "unscored_kev"
+        ]
+      },
+      "band_label": {
+        "type": "string",
+        "minLength": 1
+      },
+      "kev_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_snapshot_id": {
+        "type": "string",
+        "minLength": 1
+      },
+      "kev_catalog_date_released": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_source_date": {
+        "type": "string",
+        "minLength": 1
+      },
+      "kev_retrieved_at_utc": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_retrieved_at_utc": {
+        "type": "string",
+        "minLength": 1
+      },
+      "epss_model_version": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "kev_cve_count": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "denominator_all_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "denominator_scored_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "unscored_kev": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "lower_bound": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "upper_bound": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 1
+      },
+      "upper_inclusive": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "share_all_kev_percent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 100
+      },
+      "share_scored_kev_percent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 100
+      },
+      "full_epss_band_count": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 0
+      },
+      "full_epss_denominator": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 0
+      },
+      "full_epss_population_percent": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 100
+      }
+    },
+    "additionalProperties": true
+  },
+  "minItems": 6,
+  "maxItems": 6
+}

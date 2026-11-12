@@ -35,3 +35,7 @@ apps/web/dist/
 
 # Local browser demo exports, never commit unreviewed dataset bundles
 /apps/web/public/demo/
+
+# Generated Playwright results and HTML report
+/apps/web/test-results/
+/apps/web/playwright-report/

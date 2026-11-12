@@ -41,3 +41,6 @@ apps/web/dist/
 /apps/web/playwright-report/
 /apps/web/test-results-v2/
 /apps/web/playwright-report-v2/
+
+# Portfolio screenshot runner's Playwright scratch output
+/apps/web/test-results-portfolio/

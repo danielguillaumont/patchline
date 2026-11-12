@@ -44,6 +44,25 @@ jobs:
         run: npm test
       - name: Build frontend
         run: npm run build
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Prepare fixture toolchain for browser tests
+        working-directory: .
+        run: uv sync --locked --python 3.12
+      - name: Install Playwright Chromium and Linux dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Test browser interactions and responsive widths
+        run: npm run test:e2e
+      - name: Upload browser screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spectral-index-browser-evidence
+          path: |
+            apps/web/test-results/
+            apps/web/playwright-report/
+          retention-days: 14
 
   dbt:
     name: dbt offline fixture

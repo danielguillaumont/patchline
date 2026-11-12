@@ -10,9 +10,9 @@ Patchline is a local-first security and data engineering project pairing archive
 - **Warehouse and dbt:** DuckDB staging, a full CVE-universe KEV/EPSS join, analytical marts, reconciliation and source-lineage tests.
 - **M03:** EPSS score coverage for the selected KEV catalog, including unmatched CVEs.
 - **M04:** EPSS full-scored-population summary and five fixed probability bands.
-- **M05:** KEV cohort membership across those same five bands plus an explicit unscored KEV category. Published in opt-in v2 exports, not yet consumed by the website.
+- **M05:** KEV cohort membership across those same five bands plus an explicit unscored KEV category. Published in opt-in v2 exports and visualized by Spectral Index when a verified v2 demo is loaded.
 - **Exports:** immutable, verified v1 bundles of **nine dataset artifacts** (M03/M04), with opt-in v2 bundles of **twelve** (adding M05); CSV, JSON, Parquet, and manifest SHA-256 metadata. Neither is a live vulnerability feed.
-- **Spectral Index:** responsive Intelligence Atlas, interactive EPSS band details, nine-file evidence register, and Methods & Quality views. Vulnerability Explorer is explicitly a preview rather than an invented CVE database.
+- **Spectral Index:** responsive Intelligence Atlas, interactive EPSS band details, nine-file v1 or twelve-file v2 evidence register, optional M05 cohort comparison, and Methods & Quality views. Vulnerability Explorer is explicitly a preview rather than an invented CVE database.
 - **Quality gates:** Python tests, dbt data tests, frontend tests, and isolated Chromium/Playwright browser checks in GitHub Actions.
 
 ## Architecture
@@ -30,7 +30,7 @@ Archived KEV / EPSS source files
             |
   Verified v1 (M03/M04) or v2 (+ M05)
             |
-  React / TypeScript Spectral Index (v1)
+  React / TypeScript Spectral Index (v1 or v2)
 ```
 
 **Important data boundary:** the public demo uses an explicitly labeled **synthetic fixture**. Demo values must not be described as actual current exploitation activity. EPSS scores are model estimates, not observations of exploitation; KEV catalog inclusion is not evidence of exposure in any specific organization. The website displays manifest-recorded digests but does not perform browser-side cryptographic verification.
@@ -67,15 +67,15 @@ npm run dev -- --strictPort
 # In the frontend terminal, use Ctrl + C to stop the server.
 ```
 
-For the reproducible browser suite, run `npx playwright install chromium` followed by `npm run test:e2e` from `apps/web`. The test runner creates and verifies a synthetic fixture and starts an isolated server. To view populated local demo pages outside the test suite, follow [frontend fixture setup](docs/frontend-p41.md). Do not commit generated data, fixtures, browser screenshots, or local warehouse files.
+For the reproducible browser suites, run `npx playwright install chromium` followed by `npm run test:e2e` for v1 and `npm run test:e2e:v2` for v2 from `apps/web`. The test runner creates and verifies a synthetic fixture and starts an isolated server. To view populated local demo pages outside the test suite, follow [v1 frontend fixture setup](docs/frontend-p41.md) or [v2 cohort demo setup](docs/frontend-p51c.md). Do not commit generated data, fixtures, browser screenshots, or local warehouse files.
 
 ## Methodology and source credit
 
 - [Architecture notes](docs/architecture.md)
 - [M03 coverage](docs/dbt-p33-m03.md), [M04 distribution](docs/dbt-p33-m04.md), [M05 cohort analysis](docs/dbt-p51-m05.md)
 - [Export and integrity contracts](docs/exports-p34-consumers.md)
-- [Spectral Index](docs/frontend-p41b3.md)
+- [Spectral Index](docs/frontend-p41b3.md) and [v2 cohort comparison](docs/frontend-p51c.md)
 - CISA KEV: https://github.com/cisagov/kev-data
 - FIRST EPSS: https://www.first.org/epss/data
 
-**Next:** migrate the Spectral Index consumer to opt-in v2 and introduce a clearly labeled scored-KEV versus full-EPSS comparison visualization.
+**Current scope:** aggregate analytics with explicit v1 and v2 consumers. The CVE-level Vulnerability Explorer remains a preview until a separately validated record-level contract exists.

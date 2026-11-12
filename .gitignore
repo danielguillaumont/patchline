@@ -39,3 +39,5 @@ apps/web/dist/
 # Generated Playwright results and HTML report
 /apps/web/test-results/
 /apps/web/playwright-report/
+/apps/web/test-results-v2/
+/apps/web/playwright-report-v2/

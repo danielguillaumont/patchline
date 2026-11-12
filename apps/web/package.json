@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "test": "node --test tests/*.test.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:v2": "playwright test --config playwright.v2.config.mjs"
   },
   "dependencies": {
     "react": "19.2.0",

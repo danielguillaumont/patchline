@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 const CI = Boolean(process.env.CI);
 export default defineConfig({
   testDir: './tests/e2e',
+  testIgnore: '**/v2-cohorts.spec.mjs',
   fullyParallel: false,
   forbidOnly: CI,
   retries: CI ? 1 : 0,

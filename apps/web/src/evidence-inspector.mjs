@@ -4,16 +4,20 @@ const models = {
   m03_epss_coverage_of_kev: 'M03 / KEV coverage',
   m04_epss_population_summary: 'M04 / EPSS population',
   m04_epss_score_bands: 'M04 / EPSS bands',
+  m05_kev_epss_cohort_bands: 'M05 / KEV cohort',
 };
 const formats = ['csv', 'json', 'parquet'];
 const number = new Intl.NumberFormat('en-CA');
 const validCount = n => Number.isSafeInteger(n) && n >= 0;
 
 export function validateArtifactRegister(artifacts, rowCounts) {
-  const names = Object.keys(models);
+  const names = Object.keys(rowCounts);
+  if (names.length < 3 || names.some(name => !(name in models))) {
+    throw Error('Unsupported export artifact model set');
+  }
   const expected = new Set(names.flatMap(model => formats.map(ext => `${model}.${ext}`)));
   if (!Array.isArray(artifacts) || artifacts.length !== expected.size) {
-    throw Error('Export artifact register must contain exactly nine records');
+    throw Error(`Export artifact register must contain exactly ${expected.size === 9 ? 'nine' : 'twelve'} records`);
   }
   const seen = new Set();
   for (const artifact of artifacts) {

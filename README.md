@@ -4,7 +4,7 @@
 
 Exploit Atlas is a local-first security analytics project that joins archived [CISA Known Exploited Vulnerabilities (KEV)](https://github.com/cisagov/kev-data) catalog snapshots with [FIRST Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/data) daily scores. It combines a tested data pipeline with an interactive research interface that makes its calculations, source dates, and limits visible.
 
-**Live demo:** [Open Exploit Atlas](https://danielguillaumont.github.io/patchline/)
+**Live demo:** [Open Exploit Atlas](https://danielguillaumont.github.io/exploit-atlas/)
 
 **Real-data research:** [Archived KEV and EPSS cohort study](docs/research/archived-kev-epss-2026-11.md)
 

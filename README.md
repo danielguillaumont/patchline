@@ -4,6 +4,10 @@
 
 Patchline is a local-first security analytics project that joins archived [CISA Known Exploited Vulnerabilities (KEV)](https://github.com/cisagov/kev-data) catalog snapshots with [FIRST Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/data) daily scores. It combines a tested data pipeline with **Spectral Index**, a research interface that makes its calculations, source dates, and limits visible.
 
+**Live demo:** [Open Spectral Index](https://danielguillaumont.github.io/patchline/)
+
+The hosted demo uses verified synthetic data. It is not a live vulnerability feed.
+
 **Stack:** Python 3.12 · SQL · DuckDB · dbt · React · TypeScript · Vite · Playwright
 
 > **Demo classification:** The screenshots below are generated from a verified **synthetic fixture**. Their dates, CVE counts, and percentages are test data, not current vulnerability measurements. Patchline is not a live feed or an organizational risk-scoring system.

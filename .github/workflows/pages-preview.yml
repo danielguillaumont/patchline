@@ -40,6 +40,7 @@ jobs:
           uv run --locked python -m patchline.exports.analytics create --contract v2 --database "$PATCHLINE_DUCKDB_PATH" --output "$EXPORT_DIR"
           uv run --locked python -m patchline.exports.analytics verify --output "$EXPORT_DIR"
           node apps/web/scripts/stage-pages-data.mjs --exports "$EXPORT_DIR" --destination "${RUNNER_TEMP}/patchline-pages-public/demo"
+          node apps/web/scripts/stage-public-explorer.mjs --destination "${RUNNER_TEMP}/patchline-pages-public/explorer"
       - name: Test root and Pages URL guards
         working-directory: apps/web
         run: npm test

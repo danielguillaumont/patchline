@@ -31,3 +31,24 @@ test('retains cohort and evidence interactions on the static preview', async ({p
   const sizes=await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.width+1);
 });
+
+// On pending approval the existing aggregate-only public Explorer placeholder must
+// remain. A later separately reviewed approval turns on the fictional-only interface.
+test('public Explorer respects the repository review gate', async ({page}) => {
+  const { releaseFromRepo } = await import('../../scripts/explorer-public-release.mjs');
+  const approved = releaseFromRepo().enabled;
+  await page.goto(siteBase);
+  await page.getByRole('navigation',{name:'Primary navigation'})
+    .getByRole('button',{name:/Vulnerability explorer/}).click();
+  if (!approved) {
+    await expect(page.getByText('The current contracts publish validated aggregate metrics')).toBeVisible();
+    await expect(page.getByRole('region',{name:'Public fictional vulnerability explorer'})).toHaveCount(0);
+  } else {
+    const region=page.getByRole('region',{name:'Public fictional vulnerability explorer'});
+    await expect(region).toBeVisible();
+    await expect(region.getByText('PUBLIC DEMO / FICTIONAL EXAMPLES ONLY')).toBeVisible();
+    await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(3);
+    await region.getByLabel('EPSS STATUS').selectOption('missing');
+    await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(2);
+  }
+});

@@ -50,5 +50,14 @@ test('public Explorer respects the repository review gate', async ({page}) => {
     await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(3);
     await region.getByLabel('EPSS STATUS').selectOption('missing');
     await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(2);
+    await region.getByLabel('EPSS STATUS').selectOption('all');
+    await region.getByLabel('SEARCH FICTIONAL RECORDS').fill('CVE-2099-0003');
+    await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(1);
+    await expect(region.getByRole('region',{name:'Selected fictional CVE details'})).toContainText('CVE-2099-0003');
+    await expect(region.getByRole('region',{name:'Selected fictional CVE details'})).toContainText('absent EPSS');
+    await region.getByRole('button',{name:'Clear filters'}).click();
+    await expect(region.getByRole('group',{name:'Select a fictional CVE'}).getByRole('button')).toHaveCount(3);
+    const sizes = await page.evaluate(()=>({width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
+    expect(sizes.scroll).toBeLessThanOrEqual(sizes.width+1);
   }
 });

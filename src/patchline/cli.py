@@ -54,6 +54,16 @@ def main(argv: list[str] | None = None) -> int:
     status = batch_commands.add_parser("status", help="Read a persisted planned run")
     status.add_argument("--data-dir", type=Path, default=Path("data"))
     status.add_argument("--run-id", required=True)
+    journal_init = batch_commands.add_parser(
+        "journal-init", help="Anchor a new no-overwrite run journal genesis"
+    )
+    journal_init.add_argument("--data-dir", type=Path, default=Path("data"))
+    journal_init.add_argument("--run-id", required=True)
+    journal_status = batch_commands.add_parser(
+        "journal-status", help="Verify an existing run journal genesis"
+    )
+    journal_status.add_argument("--data-dir", type=Path, default=Path("data"))
+    journal_status.add_argument("--run-id", required=True)
     args = parser.parse_args(argv)
     if args.command == "doctor":
         if not args.fixture:
@@ -87,6 +97,24 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     if args.command == "batch":
+        if args.batch_command in {"journal-init", "journal-status"}:
+            from patchline.batch.journal import (
+                BatchJournalError,
+                initialize_journal,
+                inspect_journal,
+            )
+
+            try:
+                result = (
+                    initialize_journal(args.data_dir, run_id=args.run_id)
+                    if args.batch_command == "journal-init"
+                    else inspect_journal(args.data_dir, run_id=args.run_id)
+                )
+            except (BatchJournalError, OSError) as exc:
+                print(f"Batch {args.batch_command} failed: {exc}", file=sys.stderr)
+                return 1
+            print(json.dumps(result, indent=2, sort_keys=True))
+            return 0
         if args.batch_command == "plan":
             from patchline.batch.plan import BatchPlanError, plan_batch
 

@@ -41,12 +41,19 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--output", type=Path, default=Path("data/warehouse/patchline.duckdb"))
     build.add_argument("--kev-snapshot", type=str)
     build.add_argument("--epss-snapshot", type=str)
-    batch = commands.add_parser("batch", help="Plan reproducible source-pinned batch runs")
+    batch = commands.add_parser("batch", help="Plan and reserve source-pinned batch runs")
     batch_commands = batch.add_subparsers(dest="batch_command", required=True)
     plan = batch_commands.add_parser("plan", help="Validate sources and preview an isolated run")
     plan.add_argument("--data-dir", type=Path, default=Path("data"))
     plan.add_argument("--kev-snapshot", required=True)
     plan.add_argument("--epss-snapshot", required=True)
+    initialize = batch_commands.add_parser("init", help="Reserve one new planned run on disk")
+    initialize.add_argument("--data-dir", type=Path, default=Path("data"))
+    initialize.add_argument("--kev-snapshot", required=True)
+    initialize.add_argument("--epss-snapshot", required=True)
+    status = batch_commands.add_parser("status", help="Read a persisted planned run")
+    status.add_argument("--data-dir", type=Path, default=Path("data"))
+    status.add_argument("--run-id", required=True)
     args = parser.parse_args(argv)
     if args.command == "doctor":
         if not args.fixture:
@@ -80,15 +87,33 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     if args.command == "batch":
-        from patchline.batch.plan import BatchPlanError, plan_batch
+        if args.batch_command == "plan":
+            from patchline.batch.plan import BatchPlanError, plan_batch
 
-        try:
-            result = plan_batch(
-                args.data_dir, kev_snapshot=args.kev_snapshot, epss_snapshot=args.epss_snapshot
-            )
-        except BatchPlanError as exc:
-            print(f"Batch plan failed: {exc}", file=sys.stderr)
-            return 1
+            try:
+                result = plan_batch(
+                    args.data_dir,
+                    kev_snapshot=args.kev_snapshot,
+                    epss_snapshot=args.epss_snapshot,
+                )
+            except BatchPlanError as exc:
+                print(f"Batch plan failed: {exc}", file=sys.stderr)
+                return 1
+        else:
+            from patchline.batch.state import BatchStateError, initialize_run, read_run
+
+            try:
+                if args.batch_command == "init":
+                    result = initialize_run(
+                        args.data_dir,
+                        kev_snapshot=args.kev_snapshot,
+                        epss_snapshot=args.epss_snapshot,
+                    )
+                else:
+                    result = read_run(args.data_dir, run_id=args.run_id)
+            except (BatchStateError, OSError) as exc:
+                print(f"Batch {args.batch_command} failed: {exc}", file=sys.stderr)
+                return 1
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0
     parser.print_help()

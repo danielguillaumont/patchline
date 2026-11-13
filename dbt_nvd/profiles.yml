@@ -1,0 +1,9 @@
+# Disposable working copy only: NEVER use original data/warehouse/nvd-queries/*.duckdb.
+exploit_atlas_nvd:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('EXPLOIT_ATLAS_NVD_DBT_PATH') }}"
+      schema: nvd_analytics
+      threads: 2

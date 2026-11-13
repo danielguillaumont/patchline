@@ -1,0 +1,42 @@
+version: 2
+
+sources:
+  - name: nvd_stage
+    description: One verified bounded NVD query copied from immutable EA-03A4A staging.
+    schema: nvd_stage
+    tables:
+      - name: query_registry
+        description: Query scope, input hashes and explicit non-attestation flags.
+        columns:
+          - name: query_id
+            data_tests: [not_null, unique]
+          - name: normalized_sha256
+            data_tests: [not_null]
+          - name: contract_version
+            data_tests: [not_null]
+      - name: cves
+        description: Exactly one source CVE row per query and identifier.
+        columns:
+          - name: query_id
+            data_tests: [not_null]
+          - name: cve_id
+            data_tests: [not_null, unique]
+          - name: record_index
+            data_tests: [not_null, unique]
+          - name: source_page_sha256
+            data_tests: [not_null]
+      - name: cvss_metrics
+        description: Every source-reported CVSS metric; no preferred score is selected.
+        columns:
+          - name: query_id
+            data_tests: [not_null]
+          - name: cve_id
+            data_tests: [not_null]
+          - name: metric_index
+            data_tests: [not_null]
+          - name: cvss_version
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['2.0', '3.0', '3.1', '4.0']

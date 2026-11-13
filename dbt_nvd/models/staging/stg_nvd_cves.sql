@@ -1,0 +1,19 @@
+select
+    query_id,
+    record_index,
+    cve_id,
+    source_identifier,
+    vuln_status,
+    published_source_timestamp,
+    modified_source_timestamp,
+    description_en,
+    source_page_sha256,
+    source_page_start_index,
+    source_page_record_index,
+    missing_english_description,
+    missing_cvss_metrics,
+    missing_weaknesses,
+    missing_configurations,
+    missing_references,
+    record_json
+from {{ source('nvd_stage', 'cves') }}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const atlas = () => /Intelligence atlas/i;
+const atlas = () => /Intelligence brief/i;
 const methods = () => /Methods & quality/i;
 
 test('loads a validated v2 synthetic export and renders five scored cohorts plus unscored KEV', async ({ page }, testInfo) => {

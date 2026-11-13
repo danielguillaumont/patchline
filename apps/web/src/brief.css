@@ -1,0 +1,41 @@
+/* EA-02A / intelligence brief: plain-language interpretation ahead of deep technical figures. */
+.intel-brief { padding:clamp(55px,6vw,95px) clamp(20px,5.3vw,90px) 45px; }
+.intel-brief-heading { display:flex; gap:25px; justify-content:space-between; align-items:end; border-top:1px solid #c9c0d4; padding-top:28px; }
+.intel-brief-heading h2 { font:600 clamp(38px,4.6vw,65px)/1.09 'Archivo',sans-serif; letter-spacing:-.05em; margin:18px 0 0; }
+.intel-brief-heading p { max-width:320px; color:#695A76; line-height:1.65; font-size:15px; margin:0 0 5px; }
+.intel-brief-grid { display:grid; grid-template-columns:minmax(0,1.23fr) minmax(0,.77fr); gap:0; margin-top:35px; border:1px solid #d9d3e0; }
+.intel-brief-main { padding:clamp(25px,3.5vw,48px); background:#fff; min-width:0; }
+.intel-brief-main h3 { max-width:680px; font:600 clamp(30px,3.2vw,46px)/1.17 'Archivo',sans-serif; letter-spacing:-.04em; margin:26px 0 22px; }
+.intel-brief-main p { font-size:16px; line-height:1.65; color:#4d405b; max-width:590px; }
+.intel-brief .brief-classification { display:inline-block; padding:8px 10px; background:#DDEC7E; color:#302040; font:600 10px 'IBM Plex Mono',monospace; margin:5px 0 8px; }
+.intel-brief .brief-unmatched { margin-top:22px; padding-top:20px; border-top:1px solid #e4ddea; color:#695A76; font-size:14px; line-height:1.55; }
+.intel-brief-side { display:flex; flex-direction:column; background:#e9e3f5; min-width:0; }
+.intel-brief-side article { padding:clamp(24px,3vw,38px); flex:1; }
+.intel-brief-side article+article { border-top:1px solid #c9bfd9; }
+.intel-brief-side h3 { font:600 clamp(22px,2.1vw,28px)/1.27 'Archivo',sans-serif; letter-spacing:-.025em; margin:16px 0; }
+.intel-brief-side p { color:#4d405b; font-size:14px; line-height:1.7; margin:0; }
+.intel-brief-footer { display:flex; gap:22px; align-items:center; justify-content:space-between; padding:20px 0 0; color:#695A76; font:500 11px/1.6 'IBM Plex Mono',monospace; }
+.intel-brief-footer button { background:transparent; border:0; border-bottom:1px solid #302040; padding:5px 0; font:600 12px 'IBM Plex Mono',monospace; white-space:nowrap; color:#302040; }
+@media(max-width:850px) { .intel-brief-heading { flex-direction:column; align-items:flex-start; } .intel-brief-heading p { max-width:610px; } .intel-brief-grid { grid-template-columns:1fr; } .intel-brief-side { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .intel-brief-side article+article { border-top:0; border-left:1px solid #c9bfd9; } }
+@media(max-width:600px) { .intel-brief { padding:55px 18px 28px; } .intel-brief-side { display:flex; } .intel-brief-side article+article { border-left:0; border-top:1px solid #c9bfd9; } .intel-brief-footer { flex-wrap:wrap; align-items:flex-start; } }
+
+/* EA-02A typography review: increase clarity without changing the analytic layout. */
+.hero h1 {
+  font-size: clamp(64px, 7.2vw, 118px);
+  letter-spacing: -.058em;
+  line-height: 1.045;
+  margin: clamp(38px, 4vw, 49px) 0 28px;
+}
+.hero .lede { max-width: 440px; line-height: 1.7; }
+.hero-footer { margin-top: clamp(34px, 3.5vw, 48px); }
+@media (max-width: 600px) {
+  .hero h1 {
+    font-size: clamp(56px, 14.4vw, 70px);
+    letter-spacing: -.052em;
+    line-height: 1.065;
+    margin: 34px 0 25px;
+  }
+  .intel-brief-heading h2 { line-height: 1.12; }
+  .intel-brief-main h3 { font-size: clamp(29px, 7.5vw, 36px); line-height: 1.2; letter-spacing: -.03em; }
+  .intel-brief-side h3 { line-height: 1.3; }
+}

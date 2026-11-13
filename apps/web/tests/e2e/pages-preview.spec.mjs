@@ -11,6 +11,8 @@ test('serves only the synthetic v2 showcase under the repository path', async ({
   await page.goto(siteBase);
   await expect(page.locator('.classification')).toContainText('SYNTHETIC FIXTURE');
   await expect(page.locator('.wordmark').first()).toContainText('Exploit Atlas');
+  await expect(page.getByRole('region',{name:'Intelligence brief'})).toContainText('SYNTHETIC EXAMPLE');
+  await expect(page.getByRole('region',{name:'Intelligence brief'})).toContainText('not real-world exploitation trends');
   await expect(page.locator('.classification')).toContainText('patchline.analytics-export.v2');
   await expect(page.locator('.huge-stat')).toHaveText('66.67%');
   await expect(page.getByRole('heading', {name:'The cohort in context.'})).toBeVisible();

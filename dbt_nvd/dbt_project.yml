@@ -1,0 +1,12 @@
+name: exploit_atlas_nvd
+version: '0.1.0'
+config-version: 2
+profile: exploit_atlas_nvd
+model-paths: ['models']
+test-paths: ['tests']
+clean-targets: ['target', 'dbt_packages']
+
+models:
+  exploit_atlas_nvd:
+    +materialized: view
+    +schema: staging

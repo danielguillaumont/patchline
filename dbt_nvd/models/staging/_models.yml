@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_nvd_query_registry
+    description: Verbatim source scope and digest attestations for one bounded query.
+    columns:
+      - name: query_id
+        data_tests: [not_null, unique]
+      - name: record_count
+        data_tests: [not_null]
+      - name: normalized_sha256
+        data_tests: [not_null]
+  - name: stg_nvd_cves
+    description: Per-CVE source facts, flags, page lineage and lossless JSON.
+    columns:
+      - name: query_id
+        data_tests: [not_null]
+      - name: cve_id
+        data_tests: [not_null, unique]
+      - name: source_page_sha256
+        data_tests: [not_null]
+      - name: record_index
+        data_tests: [not_null, unique]
+      - name: record_json
+        data_tests: [not_null]
+  - name: stg_nvd_cvss_metrics
+    description: All reported metrics, preserving version and null scores without ranking.
+    columns:
+      - name: query_id
+        data_tests: [not_null]
+      - name: cve_id
+        data_tests: [not_null]
+      - name: cvss_version
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['2.0', '3.0', '3.1', '4.0']
+      - name: source_metric_json
+        data_tests: [not_null]

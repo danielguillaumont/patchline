@@ -47,3 +47,7 @@ apps/web/dist/
 
 # Production-subpath Playwright preview scratch output
 /apps/web/test-results-pages/
+
+# EA05A local Explorer Playwright reports (generated output)
+/apps/web/playwright-report-explorer/
+/apps/web/test-results-explorer/

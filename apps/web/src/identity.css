@@ -1,0 +1,11 @@
+/* EA-01: Preserve the existing visual system while accommodating the new name. */
+.wordmark {
+  font-size: clamp(21px, 2.2vw, 25px);
+  letter-spacing: -.07em;
+  white-space: nowrap;
+}
+.wordmark .brand-star { margin-left: 3px; }
+@media (max-width: 510px) {
+  .wordmark { font-size: 21px; gap: 8px; }
+  .wordmark svg { flex: 0 0 30px; width: 30px; }
+}

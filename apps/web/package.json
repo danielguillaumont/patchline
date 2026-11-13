@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "build:pages": "tsc --noEmit && vite build --config vite.e2e.config.mjs --base /patchline/",
+    "build:pages": "tsc --noEmit && node scripts/build-pages.mjs",
     "test": "node --test tests/*.test.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test:e2e": "playwright test",

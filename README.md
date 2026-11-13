@@ -6,6 +6,10 @@ Patchline is a local-first security analytics project that joins archived [CISA 
 
 **Live demo:** [Open Spectral Index](https://danielguillaumont.github.io/patchline/)
 
+**Real-data research:** [Archived KEV and EPSS cohort study](docs/research/archived-kev-epss-2026-11.md)
+
+This report uses archived November 2026 source snapshots. The public interactive demo uses separate synthetic test data.
+
 The hosted demo uses verified synthetic data. It is not a live vulnerability feed.
 
 **Stack:** Python 3.12 · SQL · DuckDB · dbt · React · TypeScript · Vite · Playwright

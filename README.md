@@ -1,20 +1,24 @@
-# Patchline
+# Exploit Atlas
 
-**Evidence-led vulnerability intelligence, built to be reproduced.**
+**Vulnerability Intelligence, Made Clear.**
 
-Patchline is a local-first security analytics project that joins archived [CISA Known Exploited Vulnerabilities (KEV)](https://github.com/cisagov/kev-data) catalog snapshots with [FIRST Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/data) daily scores. It combines a tested data pipeline with **Spectral Index**, a research interface that makes its calculations, source dates, and limits visible.
+Exploit Atlas is a local-first security analytics project that joins archived [CISA Known Exploited Vulnerabilities (KEV)](https://github.com/cisagov/kev-data) catalog snapshots with [FIRST Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/data) daily scores. It combines a tested data pipeline with an interactive research interface that makes its calculations, source dates, and limits visible.
 
-**Live demo:** [Open Spectral Index](https://danielguillaumont.github.io/patchline/)
+**Live demo:** [Open Exploit Atlas](https://danielguillaumont.github.io/patchline/)
 
 **Real-data research:** [Archived KEV and EPSS cohort study](docs/research/archived-kev-epss-2026-11.md)
+
+**Product roadmap:** [Exploit Atlas development plan](docs/roadmap-exploit-atlas.md)
 
 This report uses archived November 2026 source snapshots. The public interactive demo uses separate synthetic test data.
 
 The hosted demo uses verified synthetic data. It is not a live vulnerability feed.
 
+**Compatibility note:** Existing Python imports, CLI commands, environment variables, data contract IDs, and local batch paths still use `patchline`. They are retained intentionally while the public product identity changes.
+
 **Stack:** Python 3.12 · SQL · DuckDB · dbt · React · TypeScript · Vite · Playwright
 
-> **Demo classification:** The screenshots below are generated from a verified **synthetic fixture**. Their dates, CVE counts, and percentages are test data, not current vulnerability measurements. Patchline is not a live feed or an organizational risk-scoring system.
+> **Demo classification:** The screenshots below are generated from a verified **synthetic fixture**. Their dates, CVE counts, and percentages are test data, not current vulnerability measurements. Exploit Atlas is not a live feed or an organizational risk-scoring system.
 
 ![Spectral Index Intelligence Atlas using clearly marked synthetic data](docs/assets/spectral-index-atlas.png)
 
@@ -28,7 +32,7 @@ The hosted demo uses verified synthetic data. It is not a live vulnerability fee
 | **Data contracts** | Immutable CSV, JSON, and Parquet artifacts with row counts, schemas, SHA-256 digests, and versioned consumer manifests |
 | **Application and QA** | Responsive React/TypeScript frontend, keyboard-accessible inspectors, Python and dbt checks, and Playwright browser regression |
 
-## Inside Spectral Index
+## Inside Exploit Atlas
 
 **01 / Intelligence Atlas.** Inspect KEV coverage and the full EPSS score distribution, including zero-count bands. Each number has a declared denominator.
 
@@ -58,7 +62,7 @@ Archived KEV and EPSS snapshots
   Versioned, verified export bundle
       v1: 9 artifacts / v2: 12
              |
-       Spectral Index UI
+       Exploit Atlas UI
 ```
 
 **Contract compatibility:** v1 remains the default and publishes M03/M04. Opt-in v2 adds the six-row M05 cohort mart and a corresponding comparison view. Both bundles include CSV, JSON, and Parquet artifacts. See [export contract and migration notes](docs/exports-p51b.md).
@@ -71,7 +75,7 @@ On Windows, use PowerShell 5.1 with Node.js 22 or newer, uv, and Python 3.12 ava
 
 Run `.\scripts\Start-PatchlineDemo.ps1` from the repository root.
 
-The launcher creates an isolated synthetic DuckDB warehouse, runs dbt tests, verifies a v2 export, and starts Spectral Index locally.
+The launcher creates an isolated synthetic DuckDB warehouse, runs dbt tests, verifies a v2 export, and starts Exploit Atlas locally.
 
 Open the local URL displayed by the launcher. All measurements are synthetic test data, not live vulnerability statistics.
 

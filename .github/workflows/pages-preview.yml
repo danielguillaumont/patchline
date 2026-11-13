@@ -1,4 +1,4 @@
-name: Spectral Index Pages Preview
+name: Exploit Atlas Pages Preview
 
 on:
   pull_request:
@@ -53,13 +53,29 @@ jobs:
       - name: Install Chromium for production-base smoke tests
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
-      - name: Test production build at /patchline/
+      - name: Test production build at current repository path
         working-directory: apps/web
         run: npx playwright test --config playwright.pages.config.mjs
+      - name: Rehearse future /exploit-atlas/ deployment path
+        working-directory: apps/web
+        env:
+          EXPLOIT_ATLAS_PAGES_SITE: exploit-atlas
+          PATCHLINE_E2E_PUBLIC_DIR: ${{ runner.temp }}/patchline-pages-public
+        run: |
+          npm run build:pages
+          node scripts/verify-pages-dist.mjs --dist dist
+          npx playwright test --config playwright.pages.config.mjs
+      - name: Restore deployable site at current repository path
+        working-directory: apps/web
+        env:
+          PATCHLINE_E2E_PUBLIC_DIR: ${{ runner.temp }}/patchline-pages-public
+        run: |
+          npm run build:pages
+          node scripts/verify-pages-dist.mjs --dist dist
       - name: Upload Pages-ready preview artifact
         uses: actions/upload-artifact@v4
         with:
-          name: spectral-index-pages-preview
+          name: exploit-atlas-pages-preview
           path: apps/web/dist/
           retention-days: 7
       - name: Upload verified GitHub Pages artifact
@@ -69,7 +85,7 @@ jobs:
           path: apps/web/dist/
 
   deploy:
-    name: Deploy verified Spectral Index
+    name: Deploy verified Exploit Atlas
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: static-preview
     runs-on: ubuntu-latest

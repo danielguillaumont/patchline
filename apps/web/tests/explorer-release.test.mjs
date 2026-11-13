@@ -22,15 +22,29 @@ function testDir(fn) {
 test('exact candidate SHA remains pinned to EA-05B1 canonical source',()=>{
   assert.equal(sha256(canonicalBytes(fresh())),PINNED_CANDIDATE_SHA256);
 });
-test('default release requires manual review and has no publishable bytes',()=>{
-  const state=releaseFromRepo();assert.equal(state.enabled,false);
-  assert.equal('dataBytes' in state,false);
+test('repository release state matches explicit reviewed approval',()=>{
+  const record = approval();
+  const state = releaseFromRepo();
+  assert.equal(state.enabled, record.approved);
+  if (record.approved) {
+    assert.equal(record.approved_by, 'repository_owner');
+    assert.match(record.approved_at_utc, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+    assert.ok(record.review_note.length >= 24);
+    assert.equal(JSON.parse(state.dataBytes).records.length, 3);
+    assert.equal(state.manifest.source_archives_reverified, false);
+  } else {
+    assert.equal('dataBytes' in state,false);
+  }
 });
-test('pending approval remains unapproved, even with a valid seed',()=>{
-  assert.deepEqual(validatedRelease(fresh(),approval()),releaseFromRepo());
+test('pending approval always withholds data, even with a valid seed',()=>{
+  const pending = {...approval(),approved:false,approved_by:null,approved_at_utc:null,review_note:null};
+  const result = validatedRelease(fresh(),pending);
+  assert.equal(result.enabled,false);
+  assert.equal('dataBytes' in result,false);
 });
 test('cannot stage public directory while approval is pending',()=>testDir(dest=>{
-  const result=stagePublicExplorer(dest);
+  const pending = {...approval(),approved:false,approved_by:null,approved_at_utc:null,review_note:null};
+  const result=stagePublicExplorer(dest,validatedRelease(fresh(),pending));
   assert.equal(result.status,'withheld_pending_review');
   assert.equal(existsSync(dest),false);
 }));
@@ -43,7 +57,7 @@ test('candidate mutation cannot be approved by just recomputing manifest',()=>{
   assert.throws(()=>validatedRelease(f,approved()),/pinned/);
 });
 test('approval rejects claimed reviewer when the state is pending',()=>{
-  const a=approval();a.approved_by='repository_owner';
+  const a={...approval(),approved:false,approved_by:'repository_owner',approved_at_utc:null,review_note:null};
   assert.throws(()=>validatedRelease(fresh(),a),/pending approval/);
 });
 test('approval rejects missing reviewer identity',()=>{

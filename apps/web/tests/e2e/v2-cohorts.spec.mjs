@@ -51,6 +51,18 @@ test('lists twelve artifacts and displays M05 metadata honestly', async ({ page 
   await testInfo.attach('v2 M05 evidence', {path:file,contentType:'image/png'});
 });
 
+test('provides a classified interpretation for the selected M05 interval', async ({ page }) => {
+  await page.goto('/');
+  const panel = page.getByRole('region', { name: 'Selected cohort interval interpretation' });
+  await expect(panel).toContainText('1 of 2 scored KEV CVEs (50.00%)');
+  await expect(panel).toContainText('1 of 4 full EPSS CVEs (25.00%)');
+  await expect(panel).toContainText('overlapping distributions');
+  await expect(panel).toContainText('Synthetic illustration');
+  const buttons = page.getByRole('group', {name:'Compare KEV and full EPSS probability bands'}).getByRole('button');
+  await buttons.nth(1).click();
+  await expect(panel).toContainText('0 of 2 scored KEV CVEs');
+});
+
 test('keeps the document contained and existing atlas view functional', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', {name:'Primary navigation'});

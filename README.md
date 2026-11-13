@@ -2,96 +2,93 @@
 
 **Vulnerability Intelligence, Made Clear.**
 
-Exploit Atlas is a local-first security analytics project that joins archived [CISA Known Exploited Vulnerabilities (KEV)](https://github.com/cisagov/kev-data) catalog snapshots with [FIRST Exploit Prediction Scoring System (EPSS)](https://www.first.org/epss/data) daily scores. It combines a tested data pipeline with an interactive research interface that makes its calculations, source dates, and limits visible.
+Exploit Atlas turns archived vulnerability intelligence into **explainable, source-backed analysis**. It connects evidence of known exploitation from CISA KEV with FIRST EPSS probability estimates, then makes the comparisons understandable through an interactive research interface. Behind the interface is a reproducible Python, DuckDB, and dbt pipeline with versioned exports and validation checks.
 
-**Live demo:** [Open Exploit Atlas](https://danielguillaumont.github.io/exploit-atlas/)
+**[Explore the live demo](https://danielguillaumont.github.io/exploit-atlas/)** · **[Read the real-data case study](docs/research/archived-kev-epss-2026-11.md)** · **[See the product roadmap](docs/roadmap-exploit-atlas.md)**
 
-**Real-data research:** [Archived KEV and EPSS cohort study](docs/research/archived-kev-epss-2026-11.md)
+> **Demo data is synthetic.** The interactive site and screenshots use fabricated, verified test records—not live vulnerability measurements. The [November 2026 research report](docs/research/archived-kev-epss-2026-11.md) is a separate analysis of archived real KEV and EPSS snapshots. Exploit Atlas does not calculate an organization's actual security risk.
 
-**Product roadmap:** [Exploit Atlas development plan](docs/roadmap-exploit-atlas.md)
+![Exploit Atlas desktop Intelligence Brief: a synthetic KEV-to-EPSS coverage example with its limits clearly labeled](docs/assets/exploit-atlas-hero.png)
 
-This report uses archived November 2026 source snapshots. The public interactive demo uses separate synthetic test data.
+*The Intelligence Brief, shown with the verified synthetic v2 fixture.*
 
-The hosted demo uses verified synthetic data. It is not a live vulnerability feed.
+## The problem it tackles
 
-**Compatibility note:** Existing Python imports, CLI commands, environment variables, data contract IDs, and local batch paths still use `patchline`. They are retained intentionally while the public product identity changes.
+**Known exploitation, predicted exploitation, and vulnerability severity are different signals.** KEV identifies vulnerabilities with evidence of exploitation; EPSS estimates the probability of exploitation in the next 30 days; CVSS describes severity, not exploit likelihood. Public intelligence alone cannot determine whether a particular organization is exposed.
 
-**Stack:** Python 3.12 · SQL · DuckDB · dbt · React · TypeScript · Vite · Playwright
+Exploit Atlas brings these distinctions into one place, so a reader can trace **what the sources show, which population each percentage describes, what's missing, and what cannot be concluded**.
 
-> **Demo classification:** The screenshots below are generated from a verified **synthetic fixture**. Their dates, CVE counts, and percentages are test data, not current vulnerability measurements. Exploit Atlas is not a live feed or an organizational risk-scoring system.
+## Explore the product
 
-![Spectral Index Intelligence Atlas using clearly marked synthetic data](docs/assets/spectral-index-atlas.png)
-
-## What the project demonstrates
-
-| Engineering area | What is implemented |
+| Experience | What it shows |
 | --- | --- |
-| **Ingestion and provenance** | Validated, archived KEV and EPSS inputs; immutable snapshot IDs, source dates, and source record counts |
-| **Data modeling** | DuckDB warehouse, dbt staging, a full CVE-universe join, reconciliation tests, and three analytical metric families |
-| **Analytics** | M03 KEV score coverage; M04 full EPSS distribution and quantiles; M05 KEV cohort distribution with an explicit unscored category |
-| **Data contracts** | Immutable CSV, JSON, and Parquet artifacts with row counts, schemas, SHA-256 digests, and versioned consumer manifests |
-| **Application and QA** | Responsive React/TypeScript frontend, keyboard-accessible inspectors, Python and dbt checks, and Playwright browser regression |
+| **01 / Intelligence Brief** | A plain-language finding, data-coverage context, source dates, limitations, and sensible investigation questions. |
+| **02 / Vulnerability Explorer** | An analytical view of EPSS score bands and the scored KEV cohort, with source-scoped explanations, selectable intervals, and an explicit unscored category. CVE-level browsing is still a preview, not a populated vulnerability catalog. |
+| **03 / Methods & Quality** | Published artifact metadata, source provenance, schemas, counts, recorded digests, and the boundaries of browser-side verification. |
 
-## Inside Exploit Atlas
+![Exploit Atlas Intelligence Brief showing the source comparison, interpretation, and glossary based on synthetic test data](docs/assets/exploit-atlas-brief.png)
 
-**01 / Intelligence Atlas.** Inspect KEV coverage and the full EPSS score distribution, including zero-count bands. Each number has a declared denominator.
+*An interpretation-first view: the summary explains the sample, while the source metadata stays available.*
 
-**02 / Cohort lens.** Compare the same probability intervals for all scored EPSS records and the subset also present in KEV. The subsets overlap, and unscored KEV records remain outside the probability axis.
+**Terminology is part of the experience.** Eight expandable definitions explain CVE, KEV, EPSS, CVSS, coverage, population, cohort, and percentile. The EPSS and KEV charts explain their own denominators and update their interpretation with the selected interval.
 
-![Spectral Index cohort comparison using verified synthetic data](docs/assets/spectral-index-cohort.png)
+[View the glossary and distribution](docs/assets/exploit-atlas-glossary.png) · [View the 390px mobile layout](docs/assets/exploit-atlas-mobile.png)
 
-**03 / Methods & Quality.** Browse the manifest, source snapshots, and recorded metadata for each published artifact. The browser does not claim to cryptographically verify files it has not downloaded.
+## Engineering behind the interface
 
-[View the evidence inspector screenshot](docs/assets/spectral-index-evidence.png) · [View the mobile layout](docs/assets/spectral-index-mobile.png)
-
-The **Vulnerability Explorer** is deliberately a preview. A CVE-level browsing contract has not yet been published; the interface does not invent individual vulnerability records.
-
-## From source to interface
+| Area | Implemented work |
+| --- | --- |
+| **Source ingestion & lineage** | Validate archived CISA KEV and FIRST EPSS inputs; preserve source dates, row counts, and content-addressed snapshot identities. |
+| **Data engineering** | Python + SQL + DuckDB + dbt staging, full CVE-universe joins, metric reconciliation, and tests. |
+| **Analytical marts** | **M03:** KEV-to-EPSS coverage; **M04:** full scored EPSS distribution and quantiles; **M05:** scored KEV cohort distribution with unscored records kept separate. |
+| **Consumer contracts** | Verified CSV, JSON, and Parquet bundles with manifest schemas, row counts, SHA-256 digests, and v1/v2 compatibility. |
+| **Frontend & quality** | React, TypeScript, Vite, keyboard-accessible exploration, explanatory text derived from the data, frontend unit tests, and Playwright regression suites. |
+| **Batch foundations** | Deterministic source-pair planning, durable planned state, anchored journaling, and append-only *proposal* events. These are not a completed execution scheduler or proof that pipeline stages ran. |
 
 ```text
-Archived KEV and EPSS snapshots
-             |
-    Python validation and ingestion
-             |
-         DuckDB warehouse
-             |
-   dbt staging + full CVE join
-             |
-        M03 / M04 / M05
-             |
-  Versioned, verified export bundle
-      v1: 9 artifacts / v2: 12
-             |
-       Exploit Atlas UI
+Archived KEV + EPSS snapshots
+              │
+   Python validation and ingestion
+              │
+        DuckDB warehouse
+              │
+    dbt staging + CVE joins
+              │
+    M03 coverage / M04 EPSS / M05 cohort
+              │
+    Verified, versioned export bundle
+    v1: 9 artifacts | v2: 12 artifacts
+              │
+      Exploit Atlas React interface
 ```
 
-**Contract compatibility:** v1 remains the default and publishes M03/M04. Opt-in v2 adds the six-row M05 cohort mart and a corresponding comparison view. Both bundles include CSV, JSON, and Parquet artifacts. See [export contract and migration notes](docs/exports-p51b.md).
+**Contract note:** v1 is still the default export and contains M03/M04; opt-in v2 adds the M05 cohort mart and comparison view. Both use CSV, JSON, and Parquet. See [export versioning](docs/exports-p51b.md).
 
-**Interpretation matters:** EPSS is a model estimate of exploitation probability over the next 30 days. KEV membership indicates known exploitation. Neither by itself measures exposure, business impact, or risk in a specific environment. The scored KEV cohort is part of the full EPSS population, not an independent sample.
+## Real-data research, separately published
 
-## Quick start: verified synthetic demo
+The [archived November 2026 KEV/EPSS cohort study](docs/research/archived-kev-epss-2026-11.md) is reproducible research based on verified source snapshots—not the sample used by the hosted interface.
 
-On Windows, use PowerShell 5.1 with Node.js 22 or newer, uv, and Python 3.12 available to uv.
+Its recorded populations are **1,779 KEV CVEs** and **404,864 scored EPSS CVEs**. In those particular snapshots, **51.10%** of scored KEV CVEs fall into the highest EPSS band (`0.500–1.000`), compared with **1.08%** of the full EPSS population. The scored KEV set is a subset of the EPSS population, so these are overlapping, non-independent groups. These are historical descriptive comparisons, not a forecast or an organizational prioritization rule.
 
-Run `.\scripts\Start-PatchlineDemo.ps1` from the repository root.
+The [report](docs/research/archived-kev-epss-2026-11.md) includes exact source timestamps, snapshot IDs, band counts, methodology, and limitations.
 
-The launcher creates an isolated synthetic DuckDB warehouse, runs dbt tests, verifies a v2 export, and starts Exploit Atlas locally.
+## Run locally
 
-Open the local URL displayed by the launcher. All measurements are synthetic test data, not live vulnerability statistics.
+**Prerequisites:** Windows PowerShell 5.1, Python 3.12, [uv](https://docs.astral.sh/uv/), and Node.js 22 or newer. From the repository root:
 
-Press Ctrl+C to stop the demo.
+```powershell
+.\scripts\Start-PatchlineDemo.ps1
+```
 
-If port 5173 is busy, stop the existing Vite server or run `.\scripts\Start-PatchlineDemo.ps1 -Port 5174`.
+The launcher builds an isolated synthetic DuckDB fixture, runs dbt checks, verifies the v2 export bundle, and serves the populated frontend. Use `-Port 5174` if port 5173 is already in use. Press **Ctrl+C** to stop it. See the [local demo guide](docs/demo-p52b.md).
 
-For prerequisites and cleanup details, see the [local demo guide](docs/demo-p52b.md).
+### Reproduce the fixture and pipeline checks
 
-## Reproduce the pipeline
-
-Requirements: **Python 3.12**, [uv](https://docs.astral.sh/uv/), and a local shell. These PowerShell 5.1 commands create an isolated, invented fixture without downloading live vulnerability feeds:
+These commands use a fabricated local fixture; they do not fetch live vulnerability feeds:
 
 ```powershell
 uv sync --locked --python 3.12
-$env:PATCHLINE_DUCKDB_PATH = Join-Path $env:TEMP ("patchline-demo-" + [guid]::NewGuid().ToString("N") + ".duckdb")
+$env:PATCHLINE_DUCKDB_PATH = Join-Path $env:TEMP ("exploit-atlas-fixture-" + [guid]::NewGuid().ToString("N") + ".duckdb")
 uv run --locked python -m patchline.fixtures.ci_warehouse create --output $env:PATCHLINE_DUCKDB_PATH
 uv run --locked dbt run --project-dir dbt --profiles-dir dbt
 uv run --locked dbt test --project-dir dbt --profiles-dir dbt
@@ -100,37 +97,35 @@ uv run --locked pytest
 uv run --locked ruff check .
 ```
 
-To create an independently verified v2 export, from the repository root use a **new** empty output directory:
+To create and verify a fresh v2 export:
 
 ```powershell
-$out = Join-Path $env:TEMP ("patchline-v2-" + [guid]::NewGuid().ToString("N"))
+$out = Join-Path $env:TEMP ("exploit-atlas-v2-" + [guid]::NewGuid().ToString("N"))
 uv run --locked python -m patchline.exports.analytics create --contract v2 --database $env:PATCHLINE_DUCKDB_PATH --output $out
 uv run --locked python -m patchline.exports.analytics verify --output $out
 ```
 
-To view a populated local site, follow the [verified v2 demo setup](docs/frontend-p51c.md). The website starts with an honest unavailable-data state if no approved demo bundle is loaded.
-
-## Frontend and browser tests
-
-Node.js 22 is required. Use a separate frontend terminal:
+Frontend checks (from the repository root):
 
 ```powershell
-Set-Location apps/web
+Push-Location apps/web
 npm ci
 npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e
 npm run test:e2e:v2
+Pop-Location
 ```
 
-Both browser suites generate independent synthetic fixtures and run an isolated Vite server. For curated, reproducible README screenshots, see [Portfolio screenshot capture](docs/portfolio-proof.md). These are browser captures of the real application, not mockups.
+## Methods, evidence, and next milestones
 
-## Methods and project notes
+**[Architecture](docs/architecture.md)** · **[Methodology](docs/methodology.md)** · **[Export contracts](docs/exports-p51b.md)** · **[EA-02B interpretation](docs/ea02b-chart-interpretation.md)** · **[Product roadmap](docs/roadmap-exploit-atlas.md)**
 
-- [Architecture](docs/architecture.md) and [methodology](docs/methodology.md)
-- [M03 KEV coverage](docs/dbt-p33-m03.md), [M04 EPSS distribution](docs/dbt-p33-m04.md), [M05 cohort analysis](docs/dbt-p51-m05.md)
-- [Export validation](docs/exports-p34-consumers.md) and [v2 versioning](docs/exports-p51b.md)
-- [Spectral Index implementation](docs/frontend-p41b3.md) and [cohort comparison](docs/frontend-p51c.md)
+The next planned data-source milestone is **NVD integration**, followed by validated multi-source joins and richer CVE-level exploration. These are roadmap items, **not implemented features**.
 
-**Scope:** Aggregate research analytics with explicit provenance. No live SOC detection, CVE-level explorer, production API, or per-organization risk assessment is claimed.
+**Current limits:** The public site is a synthetic demonstration, not a live feed, CVE-level inventory, production API, SOC detection system, or organization-specific risk assessor. Recorded artifact digests in the browser are metadata, not claims that the browser has independently downloaded and hashed every artifact.
+
+**Naming compatibility:** The public product is Exploit Atlas. Existing Python imports, CLI calls, schema identifiers, local paths, and the `Start-PatchlineDemo.ps1` launcher retain `patchline` intentionally for backward compatibility.
+
+*Screenshots are cropped captures of the actual local synthetic demo reviewed on November 13, 2026. No data or UI elements were added to the images. [Screenshot provenance](docs/readme-screenshots.md).*

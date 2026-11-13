@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { demoJsonNames, readAndVerifyPagesData } from './pages-data.mjs';
 import { pagesBase } from './pages-base.mjs';
+import { releaseFromRepo, verifyExplorerDirectory } from './explorer-public-release.mjs';
 
 try {
   if (process.argv.length !== 4 || process.argv[2] !== '--dist') {
@@ -25,7 +26,18 @@ try {
     throw Error('Static demo must contain exactly the manifest and four approved JSON marts');
   }
   readAndVerifyPagesData(demo);
-  console.log(`Exploit Atlas static site verified: ${pagesBase()} assets and synthetic v2 demo only.`);
+  const release = releaseFromRepo();
+  const explorerPath = join(dist, 'explorer');
+  if (release.enabled) {
+    verifyExplorerDirectory(explorerPath, release);
+  } else if (existsSync(explorerPath)) {
+    throw Error('Unapproved Explorer directory present in public dist');
+  }
+  const allowedRoot = ['assets','demo','index.html', ...(release.enabled ? ['explorer'] : [])].sort();
+  if (JSON.stringify(readdirSync(dist).sort()) !== JSON.stringify(allowedRoot)) {
+    throw Error('Unexpected files in public dist root');
+  }
+  console.log(`Exploit Atlas static site verified: ${pagesBase()} with ${release.enabled ? 'approved fictional Explorer' : 'Explorer withheld pending review'}.`);
 } catch(error) {
   console.error(`Pages static verification failed: ${error.message}`);
   process.exitCode = 1;

@@ -1,0 +1,8 @@
+{
+  "schema_id": "exploit-atlas.public-explorer-approval.v1",
+  "candidate_sha256": "79901457953bcfb1d29999aca7b79e03f0f1005f1ed771a5eba72a976d3f07af",
+  "approved": false,
+  "approved_by": null,
+  "approved_at_utc": null,
+  "review_note": null
+}

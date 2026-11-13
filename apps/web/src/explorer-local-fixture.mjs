@@ -1,0 +1,50 @@
+// EA-05A: deliberately fictional local UI fixture. NOT the EA-03A4E2 export.
+// The CVE-2099 namespace prevents interpreting these as 2026 vulnerability findings.
+export const localExplorerFixture = {
+  schema_id: 'exploit-atlas.local-explorer-fixture.v1',
+  data_kind: 'synthetic_fixture',
+  status: 'developer_preview_not_approved_for_publication',
+  public_release_approved: false,
+  provenance: 'hand_curated_fictional_examples_not_source_archive_evidence',
+  scope: 'exactly_three_fictional_cves_not_the_nvd_corpus',
+  dates: { nvd: '2026-01-12', kev: '2026-01-15', epss: '2026-01-15' },
+  epss_model: 'v-ci-synthetic',
+  records: [
+    {
+      cve_id: 'CVE-2099-0001',
+      title: 'Illustrative network service',
+      summary: 'Fictional service example used to illustrate an NVD severity score alongside KEV and a genuine zero-valued EPSS field.',
+      nvd_status: 'Analyzed',
+      kev: true,
+      kev_date_added: '2026-01-10',
+      epss: 0,
+      epss_percentile: 0,
+      cvss: [
+        { version: '3.1', score: 9.8, severity: 'CRITICAL', vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H' },
+        { version: '4.0', score: null, severity: null, vector: null },
+      ],
+    },
+    {
+      cve_id: 'CVE-2099-0003',
+      title: 'Illustrative application component',
+      summary: 'Fictional KEV-listed record with no EPSS match in the selected illustrative snapshot. Missing is not a zero probability.',
+      nvd_status: 'Analyzed',
+      kev: true,
+      kev_date_added: '2026-01-11',
+      epss: null,
+      epss_percentile: null,
+      cvss: [],
+    },
+    {
+      cve_id: 'CVE-2099-9999',
+      title: 'Illustrative pending analysis',
+      summary: 'Fictional record awaiting analysis. No KEV listing, EPSS observation, or CVSS metric is supplied.',
+      nvd_status: 'Awaiting Analysis',
+      kev: false,
+      kev_date_added: null,
+      epss: null,
+      epss_percentile: null,
+      cvss: [],
+    },
+  ],
+};

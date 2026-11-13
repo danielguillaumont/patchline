@@ -41,6 +41,12 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--output", type=Path, default=Path("data/warehouse/patchline.duckdb"))
     build.add_argument("--kev-snapshot", type=str)
     build.add_argument("--epss-snapshot", type=str)
+    batch = commands.add_parser("batch", help="Plan reproducible source-pinned batch runs")
+    batch_commands = batch.add_subparsers(dest="batch_command", required=True)
+    plan = batch_commands.add_parser("plan", help="Validate sources and preview an isolated run")
+    plan.add_argument("--data-dir", type=Path, default=Path("data"))
+    plan.add_argument("--kev-snapshot", required=True)
+    plan.add_argument("--epss-snapshot", required=True)
     args = parser.parse_args(argv)
     if args.command == "doctor":
         if not args.fixture:
@@ -70,6 +76,18 @@ def main(argv: list[str] | None = None) -> int:
             )
         except (WarehouseError, OSError, ValueError, RuntimeError) as exc:
             print(f"Warehouse build failed: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.command == "batch":
+        from patchline.batch.plan import BatchPlanError, plan_batch
+
+        try:
+            result = plan_batch(
+                args.data_dir, kev_snapshot=args.kev_snapshot, epss_snapshot=args.epss_snapshot
+            )
+        except BatchPlanError as exc:
+            print(f"Batch plan failed: {exc}", file=sys.stderr)
             return 1
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

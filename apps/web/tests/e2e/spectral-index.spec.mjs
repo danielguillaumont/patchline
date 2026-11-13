@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-const atlas = () => /Intelligence atlas/i;
+const atlas = () => /Intelligence brief/i;
 const methods = () => /Methods & quality/i;
 const explorer = () => /Vulnerability explorer/i;
 
 test('shows a clearly classified synthetic dataset and the actual summary', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(page.locator('.classification')).toContainText('SYNTHETIC FIXTURE');
+  await expect(page.getByRole('region',{name:'Intelligence brief'})).toContainText('2 of 3 KEV records have a matching EPSS score.');
+  await expect(page.getByRole('region',{name:'Intelligence brief'})).toContainText('fabricated test records');
   await expect(page.locator('.huge-stat')).toHaveText('66.67%');
   await expect(page.locator('.chart-header h3')).toContainText('4');
   const image = testInfo.outputPath('atlas.png');

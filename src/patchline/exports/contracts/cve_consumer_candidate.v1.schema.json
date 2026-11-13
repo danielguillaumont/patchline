@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/exploit-atlas/cve-consumer-candidate.v1.schema.json",
+  "$comment": "Repository-local offline contract. No remote resolution or publication authorization.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_id": {
+      "const": "exploit-atlas.cve-consumer-candidate.v1"
+    },
+    "status": {
+      "const": "local_candidate_not_approved_for_publication"
+    },
+    "data_kind": {
+      "const": "source_scoped_local_analysis"
+    },
+    "row_scope": {
+      "const": "only_cves_returned_by_one_bounded_nvd_query"
+    },
+    "source_join_schema_id": {
+      "const": "exploit-atlas.bounded-cve-join.v1"
+    },
+    "analysis_cutoff_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "time_precision": {
+      "const": "calendar_date_guard_only_not_as_of_reconstruction"
+    },
+    "selection_contract": {
+      "const": "exploit-atlas.cross-source-selection.v1"
+    },
+    "time_coverage_contract": {
+      "const": "exploit-atlas.time-coverage-preflight.v1"
+    },
+    "source_ids": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nvd_query_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "nvd_query_mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kev_snapshot_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "kev_source_date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "epss_snapshot_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "epss_score_date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "epss_model_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "nvd_query_id",
+        "nvd_query_mode",
+        "kev_snapshot_id",
+        "kev_source_date",
+        "epss_snapshot_id",
+        "epss_score_date",
+        "epss_model_version"
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nvd_query_cves": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "in_selected_kev_snapshot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "with_selected_epss_score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nvd_cvss_metric_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing_nvd_cves_outside_query_are_unknown": {
+          "const": true
+        }
+      },
+      "required": [
+        "nvd_query_cves",
+        "in_selected_kev_snapshot",
+        "with_selected_epss_score",
+        "nvd_cvss_metric_rows",
+        "missing_nvd_cves_outside_query_are_unknown"
+      ]
+    },
+    "historical_as_of_reconstruction_attested": {
+      "const": false
+    },
+    "nvd_global_coverage_attested": {
+      "const": false
+    },
+    "organization_asset_exposure_known": {
+      "const": false
+    },
+    "source_archive_reverified_by_this_command": {
+      "const": false
+    },
+    "published_to_public_demo": {
+      "const": false
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cve_id": {
+            "type": "string",
+            "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+          },
+          "nvd": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query_id": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "vuln_status": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "published_source_timestamp": {
+                "type": "string"
+              },
+              "modified_source_timestamp": {
+                "type": "string"
+              },
+              "source_page_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "cvss_metrics": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "metric_index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "metric_key": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cvss_version": {
+                      "enum": [
+                        "2.0",
+                        "3.0",
+                        "3.1",
+                        "4.0"
+                      ]
+                    },
+                    "metric_source": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "metric_type": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "vector_string": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "base_score": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "base_severity": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "metric_index",
+                    "metric_key",
+                    "cvss_version",
+                    "metric_source",
+                    "metric_type",
+                    "vector_string",
+                    "base_score",
+                    "base_severity"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "query_id",
+              "vuln_status",
+              "published_source_timestamp",
+              "modified_source_timestamp",
+              "source_page_sha256",
+              "cvss_metrics"
+            ]
+          },
+          "kev": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "listed_in_selected_snapshot": {
+                "type": "boolean"
+              },
+              "date_added": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "listed_in_selected_snapshot",
+              "date_added"
+            ]
+          },
+          "epss": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "has_score_in_selected_snapshot": {
+                "type": "boolean"
+              },
+              "score": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              },
+              "percentile": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "has_score_in_selected_snapshot",
+              "score",
+              "percentile"
+            ]
+          }
+        },
+        "required": [
+          "cve_id",
+          "nvd",
+          "kev",
+          "epss"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_id",
+    "status",
+    "data_kind",
+    "row_scope",
+    "source_join_schema_id",
+    "analysis_cutoff_date",
+    "time_precision",
+    "selection_contract",
+    "time_coverage_contract",
+    "source_ids",
+    "coverage",
+    "historical_as_of_reconstruction_attested",
+    "nvd_global_coverage_attested",
+    "organization_asset_exposure_known",
+    "source_archive_reverified_by_this_command",
+    "published_to_public_demo",
+    "records"
+  ]
+}

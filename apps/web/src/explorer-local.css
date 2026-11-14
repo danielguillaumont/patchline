@@ -3,3 +3,93 @@
 @media(max-width:1080px){.local-explorer-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.local-filter-search{grid-column:1/-1}.local-reset{justify-self:start}.local-explorer-body{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
 @media(max-width:760px){.local-explorer-hero{flex-direction:column;align-items:flex-start}.local-explorer-stamp{transform:none;flex-basis:auto}.local-explorer-body{grid-template-columns:minmax(0,1fr)}.local-explorer-scope{flex-direction:column;gap:5px}}
 @media(max-width:510px){.local-explorer-hero{padding:45px 18px 38px}.local-explorer-hero h1{font-size:clamp(52px,12.9vw,65px)}.local-explorer-stamp strong{font-size:30px}.local-explorer-toolbar{padding:23px 18px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.local-filter-search{grid-column:1/-1}.local-explorer-toolbar>div:nth-child(4){grid-column:1/-1}.local-reset{grid-column:1/-1}.local-explorer-body{padding:0 18px 44px}.local-detail-facts dd{font-size:17px}.local-explorer-footer{padding:20px 18px 38px}}
+
+/* EA-05C1: compact investigation-first hierarchy. Shared by local and approved public Explorer. */
+.local-explorer-hero {
+  padding-top: clamp(28px, 3.2vw, 46px);
+  padding-bottom: clamp(24px, 2.8vw, 36px);
+  align-items: center;
+  gap: clamp(22px, 3.7vw, 54px);
+}
+.local-explorer-hero > div:first-child { min-width: 0; }
+.local-explorer-hero h1 {
+  font-size: clamp(52px, 5.6vw, 82px);
+  line-height: .98;
+  margin: 14px 0 12px;
+}
+.local-explorer-hero p {
+  max-width: 570px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.local-explorer-stamp {
+  flex-basis: 210px;
+  padding: 20px;
+  gap: 8px;
+  transform: rotate(1deg);
+  box-shadow: 4px 5px #302040;
+}
+.local-explorer-stamp strong { font-size: 30px; }
+.local-explorer-scope { padding-top: 14px; padding-bottom: 14px; }
+.local-explorer-toolbar { padding-top: 26px; padding-bottom: 20px; }
+.local-explorer-toolbar input,
+.local-explorer-toolbar select {
+  border-radius: 2px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.local-explorer-toolbar :is(input, select):hover { border-color: #84719d; }
+.local-explorer-toolbar :is(input, select):focus-visible {
+  border-color: #7055d9;
+  box-shadow: 0 0 0 2px #f0eafa;
+}
+.local-reset { transition: color 140ms ease, background-color 140ms ease; }
+.local-reset:hover { background: #302040; color: #fff; }
+.local-results,
+.local-explorer-detail { box-shadow: 0 9px 22px rgba(48, 32, 64, .035); }
+.local-results-heading { background: #fcfbfe; }
+.local-result {
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+.local-result-active { background: #eee8f9; }
+.local-result-active .local-result-top strong { color: #583abe; }
+.local-result:focus-visible { outline-offset: -4px; position: relative; z-index: 1; }
+.local-explorer-detail h3 {
+  font-size: clamp(30px, 3vw, 45px);
+  letter-spacing: -.045em;
+}
+.local-detail-facts dd { line-height: 1.2; }
+.local-detail-footnote { background: #eee9f8; }
+@media (max-width: 760px) {
+  .local-explorer-hero {
+    padding-top: 34px;
+    padding-bottom: 29px;
+    gap: 22px;
+  }
+  .local-explorer-hero h1 { font-size: clamp(48px, 9.5vw, 68px); }
+  .local-explorer-stamp {
+    flex-basis: auto;
+    padding: 15px 19px;
+    transform: none;
+  }
+  .local-explorer-stamp strong { font-size: 28px; }
+  .local-explorer-body { gap: 14px; }
+}
+@media (max-width: 510px) {
+  .local-explorer-hero { padding: 27px 18px 25px; }
+  .local-explorer-hero h1 { font-size: clamp(47px, 12vw, 62px); }
+  .local-explorer-hero p { font-size: 13px; }
+  .local-explorer-toolbar { gap: 12px; }
+  .local-explorer-toolbar input,
+  .local-explorer-toolbar select { font-size: 14px; }
+  .local-results-heading { padding: 20px 18px; }
+  .local-result { padding: 19px 17px; }
+  .local-explorer-detail { padding: 22px 18px; }
+  .local-detail-facts > div { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .local-explorer-toolbar input,
+  .local-explorer-toolbar select,
+  .local-reset,
+  .local-result { transition: none; }
+}

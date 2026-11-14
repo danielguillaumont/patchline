@@ -23,8 +23,12 @@ Exploit Atlas brings these distinctions into one place, so a reader can trace **
 | Experience | What it shows |
 | --- | --- |
 | **01 / Intelligence Brief** | A plain-language finding, data-coverage context, source dates, limitations, and sensible investigation questions. |
-| **02 / Vulnerability Explorer** | An analytical view of EPSS score bands and the scored KEV cohort, with source-scoped explanations, selectable intervals, and an explicit unscored category. CVE-level browsing is still a preview, not a populated vulnerability catalog. |
+| **02 / Vulnerability Explorer** | An approved public demo with exactly three invented CVE-2099 records. Search and filter by KEV, EPSS availability, and analysis status; inspect separate CVSS versions and the difference between a missing value and a true zero. This is **not** a real CVE catalog. |
 | **03 / Methods & Quality** | Published artifact metadata, source provenance, schemas, counts, recorded digests, and the boundaries of browser-side verification. |
+
+![Approved synthetic CVE Explorer with three fictional CVE-2099 records, search controls, selected record details and clearly labeled data classification](docs/assets/exploit-atlas-explorer-desktop.png)
+
+*The public fictional Explorer, captured from an approved production-path Pages build. [View the 390px mobile Explorer](docs/assets/exploit-atlas-explorer-mobile.png).*
 
 ![Exploit Atlas Intelligence Brief showing the source comparison, interpretation, and glossary based on synthetic test data](docs/assets/exploit-atlas-brief.png)
 
@@ -122,10 +126,10 @@ Pop-Location
 
 **[Architecture](docs/architecture.md)** · **[Methodology](docs/methodology.md)** · **[Export contracts](docs/exports-p51b.md)** · **[EA-02B interpretation](docs/ea02b-chart-interpretation.md)** · **[Product roadmap](docs/roadmap-exploit-atlas.md)**
 
-The next planned data-source milestone is **NVD integration**, followed by validated multi-source joins and richer CVE-level exploration. These are roadmap items, **not implemented features**.
+The repository already contains **bounded local-only NVD acquisition, normalization, staging, and CVE-level join work**, with regression tests. Those local components do **not** authorize publication of real CVE-level data. The next major engineering milestone is to advance the local multi-source evidence workflow through independent source verification and explicit publication review, not to claim a live production vulnerability feed.
 
-**Current limits:** The public site is a synthetic demonstration, not a live feed, CVE-level inventory, production API, SOC detection system, or organization-specific risk assessor. Recorded artifact digests in the browser are metadata, not claims that the browser has independently downloaded and hashed every artifact.
+**Current limits:** The public site is a synthetic demonstration with three invented CVE-level records, not a live feed, real-world CVE inventory, production API, SOC detection system, or organization-specific risk assessor. Recorded artifact digests in the browser are metadata, not claims that the browser has independently downloaded and hashed every artifact.
 
 **Naming compatibility:** The public product is Exploit Atlas. Existing Python imports, CLI calls, schema identifiers, local paths, and the `Start-PatchlineDemo.ps1` launcher retain `patchline` intentionally for backward compatibility.
 
-*Screenshots are cropped captures of the actual local synthetic demo reviewed on November 13, 2026. No data or UI elements were added to the images. [Screenshot provenance](docs/readme-screenshots.md).*
+*Existing Intelligence Brief screenshots are cropped local synthetic-demo captures reviewed on November 13, 2026. The new fictional Explorer screenshots are direct Playwright captures from an approved synthetic Pages build; no data or UI elements were added. [Screenshot provenance](docs/readme-screenshots.md).*

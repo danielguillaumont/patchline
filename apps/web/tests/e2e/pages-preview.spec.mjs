@@ -61,3 +61,48 @@ test('public Explorer respects the repository review gate', async ({page}) => {
     expect(sizes.scroll).toBeLessThanOrEqual(sizes.width+1);
   }
 });
+
+// EA-05C1: presentation-only polish must retain public data boundaries and behavior.
+test('public Explorer puts investigation controls high on a desktop viewport', async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  await page.goto(siteBase);
+  await page.getByRole('navigation', {name: 'Primary navigation'})
+    .getByRole('button', {name: /Vulnerability explorer/i}).click();
+  const region = page.getByRole('region', {name: 'Public fictional vulnerability explorer'});
+  await expect(region).toBeVisible();
+  const hero = await region.locator('.local-explorer-hero').boundingBox();
+  const search = await region.getByLabel('SEARCH FICTIONAL RECORDS').boundingBox();
+  expect(hero).not.toBeNull();
+  expect(search).not.toBeNull();
+  expect(hero.height).toBeLessThan(390);
+  expect(search.y).toBeLessThan(900);
+  const results = region.getByRole('group', {name: 'Select a fictional CVE'});
+  const target = results.getByRole('button', {name: /CVE-2099-0003/});
+  await target.click();
+  await expect(target).toHaveAttribute('aria-pressed', 'true');
+  await expect(region.getByRole('region', {name: 'Selected fictional CVE details'}))
+    .toContainText('CVE-2099-0003');
+});
+
+test('public Explorer mobile filters and pending metrics remain readable without overflow', async ({page}) => {
+  await page.setViewportSize({width: 390, height: 844});
+  await page.goto(siteBase);
+  await page.getByRole('navigation', {name: 'Primary navigation'})
+    .getByRole('button', {name: /Vulnerability explorer/i}).click();
+  const region = page.getByRole('region', {name: 'Public fictional vulnerability explorer'});
+  await expect(region).toBeVisible();
+  await region.getByLabel('EPSS STATUS').selectOption('missing');
+  const results = region.getByRole('group', {name: 'Select a fictional CVE'});
+  await expect(results.getByRole('button')).toHaveCount(2);
+  const pending = results.getByRole('button', {name: /CVE-2099-9999/});
+  await pending.click();
+  await expect(pending).toHaveAttribute('aria-pressed', 'true');
+  const detail = region.getByRole('region', {name: 'Selected fictional CVE details'});
+  await expect(detail).toContainText('Awaiting Analysis');
+  await expect(detail).toContainText('No CVSS metrics are present');
+  const width = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    document: document.documentElement.scrollWidth,
+  }));
+  expect(width.document).toBeLessThanOrEqual(width.viewport + 1);
+});

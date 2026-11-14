@@ -14,7 +14,7 @@ function Flag({ positive, label }: {positive:boolean;label:string}) {
   return <span className={positive ? 'local-flag local-flag-yes' : 'local-flag'}>{label}</span>;
 }
 function RecordDetail({ row }: {row:Row}) {
-  return <section className="local-explorer-detail" aria-label="Selected fictional CVE details" aria-live="polite">
+  return <section id="local-selected-cve-details" className="local-explorer-detail" aria-label="Selected fictional CVE details">
     <div className="local-detail-top"><span className="eyebrow">INSPECT / FICTIONAL RECORD</span><Flag positive={row.kev} label={row.kev ? 'KEV EXAMPLE / LISTED' : 'NO KEV LISTING'}/></div>
     <h3>{row.cve_id}</h3><h4>{row.title}</h4><p>{row.summary}</p>
     <dl className="local-detail-facts">
@@ -52,9 +52,10 @@ export function ExplorerCanvas({ fixture, mode }: { fixture: ExplorerFixture; mo
       <div><label htmlFor="local-epss-filter">EPSS STATUS</label><select id="local-epss-filter" value={epss} onChange={(event:ChangeEvent<HTMLSelectElement>)=>setEpss(event.target.value)}><option value="all">All</option><option value="scored">Scored, including zero</option><option value="missing">Missing score</option></select></div>
       <div><label htmlFor="local-analysis-filter">NVD ANALYSIS</label><select id="local-analysis-filter" value={analysis} onChange={(event:ChangeEvent<HTMLSelectElement>)=>setAnalysis(event.target.value)}><option value="all">All</option><option value="analyzed">Analyzed</option><option value="pending">Awaiting analysis</option></select></div>
       <button className="local-reset" type="button" onClick={reset}>Clear filters</button></section>
+    <div className="local-selection-status" role="status" aria-live="polite" aria-atomic="true">{selected ? `Selected ${selected.cve_id}: ${selected.title}.` : "No fictional record selected."}</div>
     <div className="local-explorer-body"><section className="local-results" aria-label="Filtered fictional CVE records"><div className="local-results-heading"><div><span className="eyebrow">RESULTS / SELECTED QUERY</span><h2>{rows.length} <small>of {sample.records.length} fictional CVEs</small></h2></div><span aria-live="polite">{rows.length} matching records</span></div>
       {rows.length === 0 ? <div className="local-no-results" role="status"><h3>No matches in this tiny fixture.</h3><p>Try fewer filters. Nothing is inferred about real-world vulnerabilities.</p><button type="button" onClick={reset}>Reset search and filters</button></div> :
-      <div className="local-results-list" role="group" aria-label="Select a fictional CVE">{rows.map((row:Row)=><button type="button" key={row.cve_id} className={selected?.cve_id === row.cve_id?'local-result local-result-active':'local-result'} aria-pressed={selected?.cve_id===row.cve_id} onClick={()=>setSelectedId(row.cve_id)}>
+      <div className="local-results-list" role="group" aria-label="Select a fictional CVE">{rows.map((row:Row)=><button type="button" key={row.cve_id} className={selected?.cve_id === row.cve_id?'local-result local-result-active':'local-result'} aria-pressed={selected?.cve_id===row.cve_id} aria-controls="local-selected-cve-details" onClick={()=>setSelectedId(row.cve_id)}>
         <span className="local-result-top"><strong>{row.cve_id}</strong><span>{row.nvd_status}</span></span>
         <span className="local-result-title">{row.title}</span><span className="local-result-bottom"><span>{row.kev?'KEV example':'Not KEV-listed'}</span><span>EPSS {epssText(row.epss)}</span></span>
       </button>)}</div>}</section>

@@ -106,3 +106,28 @@ test('public Explorer mobile filters and pending metrics remain readable without
   }));
   expect(width.document).toBeLessThanOrEqual(width.viewport + 1);
 });
+
+// EA-05C2: selected-record status is concise for assistive technology.
+test('public Explorer links result controls to an accessible, concise selection announcement', async ({page}) => {
+  await page.goto(siteBase);
+  await page.getByRole('navigation', {name: 'Primary navigation'})
+    .getByRole('button', {name: /Vulnerability explorer/i}).click();
+  const region = page.getByRole('region', {name: 'Public fictional vulnerability explorer'});
+  await expect(region).toBeVisible();
+  const buttons = region.getByRole('group', {name: 'Select a fictional CVE'}).getByRole('button');
+  await expect(buttons).toHaveCount(3);
+  await expect(buttons.first()).toHaveAttribute('aria-controls', 'local-selected-cve-details');
+  await expect(region.locator('#local-selected-cve-details')).toContainText('CVE-2099-0001');
+  const notice = region.getByRole('status');
+  await expect(notice).toHaveText('Selected CVE-2099-0001: Illustrative network service.');
+  await expect(notice).toHaveAttribute('aria-atomic', 'true');
+  const second = buttons.nth(1);
+  await second.focus();
+  await page.keyboard.press('Enter');
+  await expect(second).toHaveAttribute('aria-pressed', 'true');
+  await expect(notice).toHaveText('Selected CVE-2099-0003: Illustrative application component.');
+  await expect(region.locator('#local-selected-cve-details')).toContainText('CVE-2099-0003');
+  await region.getByLabel('EPSS STATUS').selectOption('scored');
+  await expect(notice).toHaveText('Selected CVE-2099-0001: Illustrative network service.');
+  await expect(region.locator('#local-selected-cve-details')).toContainText('0.00%');
+});
